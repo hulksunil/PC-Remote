@@ -1,0 +1,118 @@
+import socket
+import pyautogui
+from enum import Enum
+import ctypes
+# from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+
+HOST = '0.0.0.0'
+PORT = 5555
+
+
+# Enum for defining commands
+class Command(Enum):
+    VOLUME_UP = 'VOLUME_UP'
+    VOLUME_DOWN = 'VOLUME_DOWN'
+    VOLUME_MUTE = 'VOLUME_MUTE'
+    MOVE_MOUSE = 'MOVE_MOUSE'
+    PRESS_KEY = 'PRESS_KEY'
+
+    def __str__(self):
+        return self.value
+
+# Simulate system volume keys (shows Windows volume overlay)
+
+
+def volume_up():
+    """Simulate volume up key press."""
+    ctypes.windll.user32.keybd_event(0xAF, 0, 0, 0)  # VK_VOLUME_UP key down
+    ctypes.windll.user32.keybd_event(0xAF, 0, 2, 0)  # VK_VOLUME_UP key up
+
+
+def volume_down():
+    """Simulate volume down key press."""
+    ctypes.windll.user32.keybd_event(0xAE, 0, 0, 0)  # VK_VOLUME_DOWN key down
+    ctypes.windll.user32.keybd_event(0xAE, 0, 2, 0)  # VK_VOLUME_DOWN key up
+
+
+def volume_mute():
+    """Simulate volume mute key press."""
+    ctypes.windll.user32.keybd_event(0xAD, 0, 0, 0)  # VK_VOLUME_MUTE down
+    ctypes.windll.user32.keybd_event(0xAD, 0, 2, 0)  # VK_VOLUME_MUTE up
+
+# Master control of volume with no interface
+# def setup_volume():
+#     """Set up and return volume control interface."""
+#     devices = AudioUtilities.GetSpeakers()
+#     interface = devices.Activate(IAudioEndpointVolume._iid_, 1, None)
+#     return interface.QueryInterface(IAudioEndpointVolume)
+
+
+# def adjust_volume(volume, increment):
+#     """Adjust the volume by a specific increment (e.g., 2%)."""
+#     current_volume = volume.GetMasterVolumeLevelScalar(
+#     )  # Get the current volume as a scalar (0.0 to 1.0)
+#     new_volume = current_volume + increment
+#     # Ensure the volume stays between 0 and 1
+#     new_volume = max(0.0, min(new_volume, 1.0))
+#     volume.SetMasterVolumeLevelScalar(
+#         new_volume, None)  # Set the new volume level
+
+
+def handle_client(client_socket):
+    """Handles the client connection and receives data."""
+    # volume = setup_volume()  # Initialize volume control
+
+    while True:
+        try:
+            # Receive the command from the client
+            command = client_socket.recv(1024).decode('utf-8').upper()
+            if command:
+                print(f"Received command: {command}")
+                if command == str(Command.VOLUME_UP):
+                    # adjust_volume(volume, 0.25)  # Increase volume by 2%
+                    volume_up()
+                    client_socket.send("Volume increased by 2%".encode())
+                elif command == str(Command.VOLUME_DOWN):
+                    # adjust_volume(volume, -0.25)  # Decrease volume by 2%
+                    volume_down()
+                    client_socket.send("Volume decreased by 2%".encode())
+                elif command == str(Command.VOLUME_MUTE):
+                    volume_mute()
+                    client_socket.send("Toggled mute".encode())
+                elif command.startswith(str(Command.MOVE_MOUSE)):
+                    x, y = map(int, command.split(':')[1].split(','))
+                    pyautogui.moveTo(x, y)
+                    client_socket.send(f"Moved mouse to ({x}, {y})".encode())
+                elif command.startswith(str(Command.PRESS_KEY)):
+                    key = command.split(':')[1]
+                    pyautogui.press(key)
+                    client_socket.send(f"Pressed {key}".encode())
+            else:
+                break
+        except Exception as e:
+            print(f"Error: {e}")
+            break
+
+    client_socket.close()
+
+
+def start_server():
+    """Starts the server and listens for incoming connections."""
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
+    server.listen(1)  # Only accept 1 client
+    print(f"Server listening on {HOST}:{PORT}")
+
+    # Accept a connection from a client (this will wait until a client connects)
+    client_socket, addr = server.accept()
+    print(f"Connection from {addr}")
+
+    # Handle the client connection
+    handle_client(client_socket)
+
+    # Close the server after the client disconnects
+    server.close()
+
+
+if __name__ == "__main__":
+    start_server()
