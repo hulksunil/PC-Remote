@@ -1,6 +1,6 @@
 import socket
 
-HOST = '192.168.2.12'  # Change if needed
+HOST = '127.0.0.1'  # Change if needed
 PORT = 5555
 
 

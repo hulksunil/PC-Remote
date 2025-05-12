@@ -18,7 +18,8 @@ def get_local_ip():
     return ip
 
 
-HOST = get_local_ip()
+# Listen on all interfaces (lets us use either 192.168.1.x or localhost for client)
+HOST = '0.0.0.0'
 PORT = 5555
 
 
@@ -116,8 +117,8 @@ def start_server():
     """Starts the server and listens for incoming connections."""
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
-    server.listen(1)  # Only accept 1 client
-    print(f"Server listening on {HOST}:{PORT}")
+    server.listen()  # Only accept 1 client
+    print(f"Server listening on {get_local_ip()}:{PORT}")
 
     # Accept a connection from a client (this will wait until a client connects)
     client_socket, addr = server.accept()
