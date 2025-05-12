@@ -4,11 +4,27 @@ from enum import Enum
 import ctypes
 # from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
-HOST = '0.0.0.0'
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Doesn't actually connect, just triggers routing to get local IP
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'  # Fallback to localhost
+    finally:
+        s.close()
+    return ip
+
+
+HOST = get_local_ip()
 PORT = 5555
 
 
 # Enum for defining commands
+
+
 class Command(Enum):
     VOLUME_UP = 'VOLUME_UP'
     VOLUME_DOWN = 'VOLUME_DOWN'

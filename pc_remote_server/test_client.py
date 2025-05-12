@@ -1,54 +1,68 @@
 import socket
-import time
 
-# Server connection details
-HOST = '127.0.0.1'  # Localhost
+HOST = '192.168.2.12'  # Change if needed
 PORT = 5555
 
 
-def connect_to_server(host, port):
-    """Connect to the server."""
+def get_command(choice):
+    if choice == '1':
+        return "VOLUME_UP"
+    elif choice == '2':
+        return "VOLUME_DOWN"
+    elif choice == '3':
+        return "VOLUME_MUTE"
+    elif choice == '4':
+        x = input("Enter X coordinate: ")
+        y = input("Enter Y coordinate: ")
+        return f"MOVE_MOUSE:{x},{y}"
+    elif choice == '5':
+        key = input("Enter key to press (e.g. a, enter, space): ").lower()
+        return f"PRESS_KEY:{key}"
+    elif choice == '6':
+        combo = input("Enter key combo (e.g. ctrl+c): ").lower()
+        return f"KEY_COMBO:{combo}"
+    return None
+
+
+def print_menu():
+    print("\nSelect a command to send:")
+    print("1. Volume Up")
+    print("2. Volume Down")
+    print("3. Toggle Mute")
+    print("4. Move Mouse")
+    print("5. Press Single Key")
+    print("6. Key Combo")
+    print("0. Exit")
+
+
+def start_client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((host, port))
-    print(f"Connected to server {host}:{port}")
-    return client_socket
+    client_socket.connect((HOST, PORT))
+    print(f"Connected to {HOST}:{PORT}")
 
+    try:
+        while True:
+            print_menu()
+            choice = input("Enter number: ").strip()
 
-def send_command(client_socket, command):
-    """Send a command to the server."""
-    client_socket.send(command.encode())
-    response = client_socket.recv(1024).decode('utf-8')
-    print(f"Server response: {response}")
+            if choice == '0':
+                print("Closing connection.")
+                break
 
+            command = get_command(choice)
+            if not command:
+                print("Invalid choice. Try again.")
+                continue
 
-def main():
-    client_socket = connect_to_server(HOST, PORT)
+            client_socket.send(command.encode())
+            response = client_socket.recv(1024).decode()
+            print(f"Server response: {response}")
 
-    # Test sending commands
-    send_command(client_socket, 'VOLUME_UP')  # Increase volume
-    send_command(client_socket, 'VOLUME_UP')  # Increase volume
-    send_command(client_socket, 'VOLUME_UP')  # Increase volume
-    send_command(client_socket, 'VOLUME_UP')  # Increase volume
-    time.sleep(1)
-    send_command(client_socket, 'VOLUME_DOWN')  # Decrease volume
-    send_command(client_socket, 'VOLUME_DOWN')  # Decrease volume
-    send_command(client_socket, 'VOLUME_DOWN')  # Decrease volume
-    send_command(client_socket, 'VOLUME_DOWN')  # Decrease volume
-    time.sleep(1)
-    # mute volume
-    send_command(client_socket, 'VOLUME_MUTE')  # Mute volume
-    time.sleep(2)
-    # unmute volume
-    send_command(client_socket, 'VOLUME_MUTE')  # Unmute volume
-
-    # Move mouse to (500, 500)
-    send_command(client_socket, 'MOVE_MOUSE:500,500')
-    time.sleep(1)
-    send_command(client_socket, 'PRESS_KEY:a')  # Press the 'a' key
-
-    # Close the connection after testing
-    client_socket.close()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user.")
+    finally:
+        client_socket.close()
 
 
 if __name__ == "__main__":
-    main()
+    start_client()
