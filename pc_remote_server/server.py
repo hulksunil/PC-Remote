@@ -77,9 +77,16 @@ def handle_client(client_socket):
                     MediaControls.send_media_previous_track()
                     client_socket.send("Previous track".encode())
                 elif command.startswith(str(Command.MOVE_MOUSE)):
-                    x, y = map(int, command.split(':')[1].split(','))
-                    pyautogui.moveRel(x, y)
-                    client_socket.send(f"Moved mouse to ({x}, {y})".encode())
+                    # we need to separate the individual commands by the ; first
+
+                    individual_commands = command.split(';')
+                    for individual_command in individual_commands:
+                        if individual_command.strip():
+                            # Move mouse to a specific position
+                            x, y = map(int, individual_command.split(
+                                ':')[1].split(','))
+                            pyautogui.moveRel(x, y)
+
                 elif command.startswith(str(Command.PRESS_KEY)):
                     key = command.split(':')[1]
                     pyautogui.press(key)
