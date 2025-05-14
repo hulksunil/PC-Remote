@@ -2,6 +2,9 @@ enum Command {
   volumeUp,
   volumeDown,
   volumeMute,
+  playPause,
+  nextTrack,
+  previousTrack,
   pressKeyA,
 }
 
@@ -14,6 +17,12 @@ extension CommandExtension on Command {
         return "VOLUME_DOWN";
       case Command.volumeMute:
         return "VOLUME_MUTE";
+      case Command.playPause:
+        return "PLAY_PAUSE";
+      case Command.nextTrack:
+        return "NEXT_TRACK";
+      case Command.previousTrack:
+        return "PREVIOUS_TRACK";
       case Command.pressKeyA:
         return "PRESS_KEY:a";
     }

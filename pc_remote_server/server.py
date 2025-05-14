@@ -23,10 +23,16 @@ HOST = '0.0.0.0'
 PORT = 5555
 
 
-# Enum for defining commands
+# Constants for key events
+KEYEVENTF_KEYUP = 0x0002
+MEDIA_PLAY_PAUSE = 0xB3  # Play/Pause media key
+MEDIA_NEXT_TRACK = 0xB0  # Next Track media key
+MEDIA_PREVIOUS_TRACK = 0xB1  # Previous Track media key
+user32 = ctypes.WinDLL('user32', use_last_error=True)
 
 
 class Command(Enum):
+    """Enum for defining commands."""
     VOLUME_UP = 'VOLUME_UP'
     VOLUME_DOWN = 'VOLUME_DOWN'
     VOLUME_MUTE = 'VOLUME_MUTE'
@@ -41,25 +47,52 @@ class Command(Enum):
     def __str__(self):
         return self.value
 
+
 # Simulate system volume keys (shows Windows volume overlay)
+
+def send_media_play_pause():
+    """Simulate Play/Pause media key press."""
+    user32.keybd_event(MEDIA_PLAY_PAUSE, 0, 0, 0)  # Key down
+    ctypes.windll.user32.keybd_event(
+        MEDIA_PLAY_PAUSE, 0, KEYEVENTF_KEYUP, 0)  # Key up
+    print("Play/Pause key sent.")
+
+
+def send_media_next_track():
+    """Simulate Next Track media key press."""
+    user32.keybd_event(MEDIA_NEXT_TRACK, 0, 0, 0)  # Key down
+    ctypes.windll.user32.keybd_event(
+        MEDIA_NEXT_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
+    print("Next Track key sent.")
+
+
+def send_media_previous_track():
+    """Simulate Previous Track media key press."""
+    user32.keybd_event(MEDIA_PREVIOUS_TRACK, 0, 0, 0)  # Key down
+    ctypes.windll.user32.keybd_event(
+        MEDIA_PREVIOUS_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
+    print("Previous Track key sent.")
 
 
 def volume_up():
     """Simulate volume up key press."""
     ctypes.windll.user32.keybd_event(0xAF, 0, 0, 0)  # VK_VOLUME_UP key down
-    ctypes.windll.user32.keybd_event(0xAF, 0, 2, 0)  # VK_VOLUME_UP key up
+    ctypes.windll.user32.keybd_event(
+        0xAF, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_UP key up
 
 
 def volume_down():
     """Simulate volume down key press."""
     ctypes.windll.user32.keybd_event(0xAE, 0, 0, 0)  # VK_VOLUME_DOWN key down
-    ctypes.windll.user32.keybd_event(0xAE, 0, 2, 0)  # VK_VOLUME_DOWN key up
+    ctypes.windll.user32.keybd_event(
+        0xAE, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_DOWN key up
 
 
 def volume_mute():
     """Simulate volume mute key press."""
     ctypes.windll.user32.keybd_event(0xAD, 0, 0, 0)  # VK_VOLUME_MUTE down
-    ctypes.windll.user32.keybd_event(0xAD, 0, 2, 0)  # VK_VOLUME_MUTE up
+    ctypes.windll.user32.keybd_event(
+        0xAD, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_MUTE up
 
 # Master control of volume with no interface
 # def setup_volume():
@@ -109,13 +142,13 @@ def handle_client(client_socket):
                     volume_mute()
                     client_socket.send("Toggled mute".encode())
                 elif command == str(Command.PLAY_PAUSE):
-                    pyautogui.press('playpause')
+                    send_media_play_pause()
                     client_socket.send("Toggled play/pause".encode())
                 elif command == str(Command.NEXT_TRACK):
-                    pyautogui.press('nexttrack')
+                    send_media_next_track()
                     client_socket.send("Next track".encode())
                 elif command == str(Command.PREVIOUS_TRACK):
-                    pyautogui.press('prevtrack')
+                    send_media_previous_track()
                     client_socket.send("Previous track".encode())
                 elif command.startswith(str(Command.MOVE_MOUSE)):
                     x, y = map(int, command.split(':')[1].split(','))

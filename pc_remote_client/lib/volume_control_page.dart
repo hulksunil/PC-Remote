@@ -36,8 +36,16 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
             child: const Text("Mute"),
           ),
           ElevatedButton(
-            onPressed: () => appState.sendCommand(Command.pressKeyA.value),
-            child: const Text("Press 'a'"),
+            onPressed: () => appState.sendCommand(Command.playPause.value),
+            child: const Text("Play/Pause"),
+          ),
+          ElevatedButton(
+            onPressed: () => appState.sendCommand(Command.previousTrack.value),
+            child: const Text("<<"),
+          ),
+          ElevatedButton(
+            onPressed: () => appState.sendCommand(Command.nextTrack.value),
+            child: const Text(">>"),
           ),
         ]),
       ),
