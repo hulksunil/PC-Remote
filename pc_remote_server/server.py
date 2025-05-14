@@ -30,8 +30,13 @@ class Command(Enum):
     VOLUME_UP = 'VOLUME_UP'
     VOLUME_DOWN = 'VOLUME_DOWN'
     VOLUME_MUTE = 'VOLUME_MUTE'
-    MOVE_MOUSE = 'MOVE_MOUSE'
+    PLAY_PAUSE = 'PLAY_PAUSE'
+    NEXT_TRACK = 'NEXT_TRACK'
+    PREVIOUS_TRACK = 'PREVIOUS_TRACK'
     PRESS_KEY = 'PRESS_KEY'
+    MOVE_MOUSE = 'MOVE_MOUSE'
+    CLICK_LEFT = 'CLICK_LEFT'
+    CLICK_RIGHT = 'CLICK_RIGHT'
 
     def __str__(self):
         return self.value
@@ -103,14 +108,29 @@ def handle_client(client_socket):
                 elif command == str(Command.VOLUME_MUTE):
                     volume_mute()
                     client_socket.send("Toggled mute".encode())
+                elif command == str(Command.PLAY_PAUSE):
+                    pyautogui.press('playpause')
+                    client_socket.send("Toggled play/pause".encode())
+                elif command == str(Command.NEXT_TRACK):
+                    pyautogui.press('nexttrack')
+                    client_socket.send("Next track".encode())
+                elif command == str(Command.PREVIOUS_TRACK):
+                    pyautogui.press('prevtrack')
+                    client_socket.send("Previous track".encode())
                 elif command.startswith(str(Command.MOVE_MOUSE)):
                     x, y = map(int, command.split(':')[1].split(','))
-                    pyautogui.moveTo(x, y)
+                    pyautogui.moveRel(x, y)
                     client_socket.send(f"Moved mouse to ({x}, {y})".encode())
                 elif command.startswith(str(Command.PRESS_KEY)):
                     key = command.split(':')[1]
                     pyautogui.press(key)
                     client_socket.send(f"Pressed {key}".encode())
+                elif command == str(Command.CLICK_LEFT):
+                    pyautogui.click()
+                    client_socket.send("Left mouse button clicked".encode())
+                elif command == str(Command.CLICK_RIGHT):
+                    pyautogui.click(button='right')
+                    client_socket.send("Right mouse button clicked".encode())
             else:
                 break
         except Exception as e:
