@@ -1,27 +1,75 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:provider/provider.dart';
 
-const HOST = '192.168.2.12';
 const PORT = 5555;
 
 // NOTE: dart.io is used for socket communication only for mobile
 // NOTE: For web, you would typically use WebSockets or HTTP requests since web apps are not allowed to use sockets directly due to security restrictions.
-void main() => runApp(const MyApp());
+void main() => runApp(
+      const MyApp(),
+    );
 
 // NOTE: The main function is the entry point of the application.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PC Remote Client',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+    return ChangeNotifierProvider(
+      create: (_) => AppState(),
+      child: MaterialApp(
+        title: 'PC Remote Client',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        ),
+        home: const HomePage(),
       ),
-      home: const HomePage(),
     );
+  }
+}
+
+class AppState extends ChangeNotifier {
+  String _ip = '';
+  String get ip => _ip;
+
+  Socket? _socket;
+  Socket? get socket => _socket;
+  set socket(Socket? socket) {
+    _socket = socket;
+    notifyListeners();
+  }
+
+  void setIp(String ip) {
+    _ip = ip;
+    notifyListeners();
+  }
+
+  void _sendCommand(String command) {
+    print('Sending command: $command');
+    if (_socket != null) {
+      _socket!.write(command);
+    } else {
+      print('Socket is not connected');
+    }
+  }
+
+  Future<void> _connect(host, port) async {
+    print('Connecting to $host:$port...');
+    try {
+      _socket = await Socket.connect(host, port);
+      print('Connected to $host:$port');
+    } catch (e) {
+      print('Connection failed: $e');
+    }
+  }
+
+  // NOTE: This will disconnect the socket when this page is disposed
+  @override
+  void dispose() {
+    _socket?.close();
+    super.dispose();
   }
 }
 
@@ -40,9 +88,9 @@ class _HomePageState extends State<HomePage> {
     Widget pageToDisplay;
     switch (selectedIndex) {
       case 0:
-        pageToDisplay = RemoteControlPage();
+        pageToDisplay = MouseControlPage();
       case 1:
-        pageToDisplay = Placeholder();
+        pageToDisplay = VolumeControlPage();
       case 2:
         pageToDisplay = Placeholder();
       case 3:
@@ -88,121 +136,45 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class IpInputScreen extends StatefulWidget {
-  const IpInputScreen({super.key});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  State<IpInputScreen> createState() => _IpInputScreenState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _IpInputScreenState extends State<IpInputScreen> {
+class _SettingsPageState extends State<SettingsPage> {
+  String ip = '';
+
   final TextEditingController _ipController = TextEditingController();
-  String _enteredIp = '';
+
+  // final String _host = '192.168.2.12'; // Replace with actual server IP
+  // final int _port = 5555;
+  String HOST = '';
 
   void _submitIp() {
     setState(() {
-      _enteredIp = _ipController.text;
+      HOST = _ipController.text;
     });
-    print('User entered IP: $_enteredIp');
+    print('User entered IP: $HOST');
     // Here you can attempt a connection using this IP
   }
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<AppState>();
+
+    _ipController.text =
+        "192.168.2.12"; // Default IP for testing (REMOTE LATER)
+
     return Scaffold(
       appBar: AppBar(title: const Text('Enter Server IP')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _ipController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Server IP Address',
-                hintText: 'e.g. 192.168.2.12',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _submitIp,
-              child: const Text('Connect'),
-            ),
-            if (_enteredIp.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text('Trying to connect to: $_enteredIp'),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RemoteControlPage extends StatefulWidget {
-  const RemoteControlPage({super.key});
-  @override
-  State<RemoteControlPage> createState() => _RemoteControlPageState();
-}
-
-class _RemoteControlPageState extends State<RemoteControlPage> {
-  Socket? _socket;
-  final String _host = '192.168.2.12'; // Replace with actual server IP
-  final int _port = 5555;
-
-  var ip = '';
-
-  Future<void> _connect() async {
-    print('Connecting to $_host:$_port...');
-    try {
-      _socket = await Socket.connect(_host, _port);
-      print('Connected to $_host:$_port');
-    } catch (e) {
-      print('Connection failed: $e');
-    }
-  }
-
-  void _sendCommand(String command) {
-    print('Sending command: $command');
-    if (_socket != null) {
-      _socket!.write(command);
-    } else {
-      print('Socket is not connected');
-    }
-  }
-
-  @override
-  void dispose() {
-    _socket?.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            AppBar(
-              title: const Text('PC Remote Control'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IpInputScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
             const Text(
-              'Control your PC remotely',
+              'SETTINGS',
               style: TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 20),
@@ -218,19 +190,121 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
                 child: const Text("Get IP")),
             const SizedBox(height: 20),
             ElevatedButton(
-                onPressed: () => _connect(),
-                child: const Text("Connect to PC ")),
+                onPressed: () {
+                  setState(() {
+                    HOST = _ipController.text;
+                  });
+                  appState._connect(HOST, PORT);
+                },
+                child: const Text("Connect to PC real ")),
             ElevatedButton(
-                onPressed: () => _sendCommand(Command.volumeUp.value),
+                onPressed: () => appState._sendCommand(Command.volumeUp.value),
                 child: const Text("Volume Up")),
             ElevatedButton(
-                onPressed: () => _sendCommand(Command.volumeDown.value),
+                onPressed: () =>
+                    appState._sendCommand(Command.volumeDown.value),
                 child: const Text("Volume Down")),
             ElevatedButton(
-                onPressed: () => _sendCommand(Command.pressKeyA.value),
+                onPressed: () => appState._sendCommand(Command.pressKeyA.value),
                 child: const Text("Press 'a'")),
+            TextField(
+              controller: _ipController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Server IP Address',
+                hintText: 'e.g. 192.168.2.12',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            if (HOST.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text('Trying to connect to: $HOST'),
+              ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class MouseControlPage extends StatefulWidget {
+  const MouseControlPage({super.key});
+  @override
+  State<MouseControlPage> createState() => _MouseControlPageState();
+}
+
+class _MouseControlPageState extends State<MouseControlPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          children: [
+            AppBar(
+              title: const Text('PC Remote Control'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class VolumeControlPage extends StatefulWidget {
+  const VolumeControlPage({super.key});
+  @override
+  State<VolumeControlPage> createState() => _VolumeControlPageState();
+}
+
+class _VolumeControlPageState extends State<VolumeControlPage> {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<AppState>();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Volume Control'),
+      ),
+      body: Center(
+        child: Column(children: [
+          const Text(
+            'Volume Control',
+            style: TextStyle(fontSize: 24),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => appState._sendCommand(Command.volumeUp.value),
+            child: const Text("Volume Up"),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => appState._sendCommand(Command.volumeDown.value),
+            child: const Text("Volume Down"),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => appState._sendCommand(Command.volumeMute.value),
+            child: const Text("Mute"),
+          ),
+          ElevatedButton(
+            onPressed: () => appState._sendCommand(Command.pressKeyA.value),
+            child: const Text("Press 'a'"),
+          ),
+        ]),
       ),
     );
   }
@@ -239,6 +313,7 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
 enum Command {
   volumeUp,
   volumeDown,
+  volumeMute,
   pressKeyA,
 }
 
@@ -249,6 +324,8 @@ extension CommandExtension on Command {
         return "VOLUME_UP";
       case Command.volumeDown:
         return "VOLUME_DOWN";
+      case Command.volumeMute:
+        return "VOLUME_MUTE";
       case Command.pressKeyA:
         return "PRESS_KEY:a";
     }
