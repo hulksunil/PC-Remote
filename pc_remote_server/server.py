@@ -81,8 +81,10 @@ def handle_client(client_socket):
 
     while True:
         try:
+            print("Waiting to receive commands...")
             # Receive the command from the client
-            command = client_socket.recv(1024).decode('utf-8').upper()
+            response = client_socket.recv(1024)
+            command = response.decode('utf-8').upper()
             if command:
                 print(f"Received command: {command}")
                 if command == str(Command.VOLUME_UP):
