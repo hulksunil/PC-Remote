@@ -84,6 +84,11 @@ def handle_client(client_socket):
             print("Waiting to receive commands...")
             # Receive the command from the client
             response = client_socket.recv(1024)
+
+            if not response:
+                print("Client disconnected")
+                break
+
             command = response.decode('utf-8').upper()
             if command:
                 print(f"Received command: {command}")
@@ -123,14 +128,11 @@ def start_server():
     print(f"Server listening on {get_local_ip()}:{PORT}")
 
     # Accept a connection from a client (this will wait until a client connects)
-    client_socket, addr = server.accept()
-    print(f"Connection from {addr}")
-
-    # Handle the client connection
-    handle_client(client_socket)
-
-    # Close the server after the client disconnects
-    server.close()
+    while True:
+        print("Waiting for a new client...")
+        client_socket, addr = server.accept()
+        print(f"Connection from {addr}")
+        handle_client(client_socket)
 
 
 if __name__ == "__main__":
