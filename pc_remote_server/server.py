@@ -1,8 +1,7 @@
 import socket
 import pyautogui
 from enum import Enum
-import ctypes
-# from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from media_controls import MediaControls
 
 
 def get_local_ip():
@@ -23,14 +22,6 @@ HOST = '0.0.0.0'
 PORT = 5555
 
 
-# Constants for key events
-KEYEVENTF_KEYUP = 0x0002
-MEDIA_PLAY_PAUSE = 0xB3  # Play/Pause media key
-MEDIA_NEXT_TRACK = 0xB0  # Next Track media key
-MEDIA_PREVIOUS_TRACK = 0xB1  # Previous Track media key
-user32 = ctypes.WinDLL('user32', use_last_error=True)
-
-
 class Command(Enum):
     """Enum for defining commands."""
     VOLUME_UP = 'VOLUME_UP'
@@ -46,71 +37,6 @@ class Command(Enum):
 
     def __str__(self):
         return self.value
-
-
-# Simulate system volume keys (shows Windows volume overlay)
-
-def send_media_play_pause():
-    """Simulate Play/Pause media key press."""
-    user32.keybd_event(MEDIA_PLAY_PAUSE, 0, 0, 0)  # Key down
-    ctypes.windll.user32.keybd_event(
-        MEDIA_PLAY_PAUSE, 0, KEYEVENTF_KEYUP, 0)  # Key up
-    print("Play/Pause key sent.")
-
-
-def send_media_next_track():
-    """Simulate Next Track media key press."""
-    user32.keybd_event(MEDIA_NEXT_TRACK, 0, 0, 0)  # Key down
-    ctypes.windll.user32.keybd_event(
-        MEDIA_NEXT_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
-    print("Next Track key sent.")
-
-
-def send_media_previous_track():
-    """Simulate Previous Track media key press."""
-    user32.keybd_event(MEDIA_PREVIOUS_TRACK, 0, 0, 0)  # Key down
-    ctypes.windll.user32.keybd_event(
-        MEDIA_PREVIOUS_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
-    print("Previous Track key sent.")
-
-
-def volume_up():
-    """Simulate volume up key press."""
-    ctypes.windll.user32.keybd_event(0xAF, 0, 0, 0)  # VK_VOLUME_UP key down
-    ctypes.windll.user32.keybd_event(
-        0xAF, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_UP key up
-
-
-def volume_down():
-    """Simulate volume down key press."""
-    ctypes.windll.user32.keybd_event(0xAE, 0, 0, 0)  # VK_VOLUME_DOWN key down
-    ctypes.windll.user32.keybd_event(
-        0xAE, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_DOWN key up
-
-
-def volume_mute():
-    """Simulate volume mute key press."""
-    ctypes.windll.user32.keybd_event(0xAD, 0, 0, 0)  # VK_VOLUME_MUTE down
-    ctypes.windll.user32.keybd_event(
-        0xAD, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_MUTE up
-
-# Master control of volume with no interface
-# def setup_volume():
-#     """Set up and return volume control interface."""
-#     devices = AudioUtilities.GetSpeakers()
-#     interface = devices.Activate(IAudioEndpointVolume._iid_, 1, None)
-#     return interface.QueryInterface(IAudioEndpointVolume)
-
-
-# def adjust_volume(volume, increment):
-#     """Adjust the volume by a specific increment (e.g., 2%)."""
-#     current_volume = volume.GetMasterVolumeLevelScalar(
-#     )  # Get the current volume as a scalar (0.0 to 1.0)
-#     new_volume = current_volume + increment
-#     # Ensure the volume stays between 0 and 1
-#     new_volume = max(0.0, min(new_volume, 1.0))
-#     volume.SetMasterVolumeLevelScalar(
-#         new_volume, None)  # Set the new volume level
 
 
 def handle_client(client_socket):
@@ -132,23 +58,23 @@ def handle_client(client_socket):
                 print(f"Received command: {command}")
                 if command == str(Command.VOLUME_UP):
                     # adjust_volume(volume, 0.25)  # Increase volume by 2%
-                    volume_up()
+                    MediaControls.volume_up()
                     client_socket.send("Volume increased by 2%".encode())
                 elif command == str(Command.VOLUME_DOWN):
                     # adjust_volume(volume, -0.25)  # Decrease volume by 2%
-                    volume_down()
+                    MediaControls.volume_down()
                     client_socket.send("Volume decreased by 2%".encode())
                 elif command == str(Command.VOLUME_MUTE):
-                    volume_mute()
+                    MediaControls.volume_mute()
                     client_socket.send("Toggled mute".encode())
                 elif command == str(Command.PLAY_PAUSE):
-                    send_media_play_pause()
+                    MediaControls.send_media_play_pause()
                     client_socket.send("Toggled play/pause".encode())
                 elif command == str(Command.NEXT_TRACK):
-                    send_media_next_track()
+                    MediaControls.send_media_next_track()
                     client_socket.send("Next track".encode())
                 elif command == str(Command.PREVIOUS_TRACK):
-                    send_media_previous_track()
+                    MediaControls.send_media_previous_track()
                     client_socket.send("Previous track".encode())
                 elif command.startswith(str(Command.MOVE_MOUSE)):
                     x, y = map(int, command.split(':')[1].split(','))
