@@ -54,29 +54,40 @@ class Touchpad extends StatefulWidget {
 
 class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
+  Offset _accumulatedDelta = Offset.zero;
   DateTime _lastSentTime = DateTime.now();
-  final int _throttleDelayMs = 50; // delay between updates
+  final int _throttleDelayMs = 60;
 
   void _handlePanStart(DragStartDetails details) {
     _lastPosition = details.localPosition;
+    _accumulatedDelta = Offset.zero;
   }
+
+  final double sensitivity = 3; // Sensitivity multiplier
 
   void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
     final now = DateTime.now();
-    if (now.difference(_lastSentTime).inMilliseconds < _throttleDelayMs) {
-      return; // throttle the call
-    }
 
     final delta =
         details.localPosition - (_lastPosition ?? details.localPosition);
+    _accumulatedDelta += delta;
     _lastPosition = details.localPosition;
-    _lastSentTime = now;
 
-    appState.sendMouseMove(delta.dx.round(), delta.dy.round());
+    if (now.difference(_lastSentTime).inMilliseconds >= _throttleDelayMs) {
+      _lastSentTime = now;
+
+      appState.sendMouseMove(
+        (_accumulatedDelta.dx * sensitivity).round(),
+        (_accumulatedDelta.dy * sensitivity).round(),
+      );
+
+      _accumulatedDelta = Offset.zero;
+    }
   }
 
   void _handlePanEnd(DragEndDetails details) {
     _lastPosition = null;
+    _accumulatedDelta = Offset.zero;
   }
 
   @override
