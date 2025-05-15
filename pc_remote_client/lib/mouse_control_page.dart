@@ -54,23 +54,25 @@ class Touchpad extends StatefulWidget {
 
 class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
-  double _moveThreshold = 10.0; // Minimum movement in pixels to send a command
+  DateTime _lastSentTime = DateTime.now();
+  final int _throttleDelayMs = 50; // delay between updates
 
   void _handlePanStart(DragStartDetails details) {
     _lastPosition = details.localPosition;
   }
 
   void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
-    final delta = details.localPosition - _lastPosition!;
-
-    // Only send a MOVE_MOUSE command if the movement exceeds the threshold
-    if (delta.distance > _moveThreshold) {
-      appState
-          .sendCommand("MOVE_MOUSE:${delta.dx.round()},${delta.dy.round()};");
-
-      // Update the last position after sending the command
-      _lastPosition = details.localPosition;
+    final now = DateTime.now();
+    if (now.difference(_lastSentTime).inMilliseconds < _throttleDelayMs) {
+      return; // throttle the call
     }
+
+    final delta =
+        details.localPosition - (_lastPosition ?? details.localPosition);
+    _lastPosition = details.localPosition;
+    _lastSentTime = now;
+
+    appState.sendMouseMove(delta.dx.round(), delta.dy.round());
   }
 
   void _handlePanEnd(DragEndDetails details) {

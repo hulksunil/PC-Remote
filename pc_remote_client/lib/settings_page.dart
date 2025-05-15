@@ -48,7 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   setState(() {
                     HOST = _ipController.text;
                   });
-                  appState.connect(HOST, PORT);
+                  appState.connectToServer(HOST, PORT);
                 },
                 child: const Text("Connect to PC real ")),
             const SizedBox(height: 5),
