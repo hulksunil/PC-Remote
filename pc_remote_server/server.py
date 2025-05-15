@@ -4,6 +4,8 @@ from enum import Enum
 from media_controls import MediaControls
 import threading
 
+pyautogui.FAILSAFE = False  # Disable fail-safe to prevent mouse movement issues
+
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -22,13 +24,13 @@ def start_tcp_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
     server.listen()  # Only accept 1 client
-    print(f"Server listening on {get_local_ip()}:{PORT}")
+    print(f"TCP Server listening on {get_local_ip()}:{PORT}")
 
     # Accept a connection from a client (this will wait until a client connects)
     while True:
         print("Waiting for a new client...")
         client_socket, addr = server.accept()
-        print(f"Connection from {addr}")
+        print(f"TCP Connection from {addr}")
         handle_client(client_socket)
 
 
@@ -108,7 +110,7 @@ def handle_client(client_socket):
                     client_socket.send("Toggled play/pause".encode())
                 elif command == str(Command.NEXT_TRACK):
                     MediaControls.send_media_next_track()
-                    client_socket.send("Next track".encode())HELLO
+                    client_socket.send("Next track".encode())
                 elif command == str(Command.PREVIOUS_TRACK):
                     MediaControls.send_media_previous_track()
                     client_socket.send("Previous track".encode())

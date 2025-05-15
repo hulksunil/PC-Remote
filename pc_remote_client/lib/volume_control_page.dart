@@ -1,21 +1,36 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
 import 'package:pc_remote_client/command.dart';
 
-class VolumeControlPage extends StatelessWidget {
+class VolumeControlPage extends StatefulWidget {
   const VolumeControlPage({super.key});
+
+  @override
+  State<VolumeControlPage> createState() => _VolumeControlPageState();
+}
+
+class _VolumeControlPageState extends State<VolumeControlPage> {
+  Timer? _holdTimer;
+
+  void _startSending(AppState appState, String command) {
+    appState.sendCommand(command); // send once
+    _holdTimer = Timer.periodic(const Duration(milliseconds: 150), (_) {
+      appState.sendCommand(command);
+    });
+  }
+
+  void _stopSending() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+  }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<AppState>();
 
     return Scaffold(
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => appState.sendCommand(Command.volumeMute.value),
-      //   tooltip: 'Mute',
-      //   child: const Icon(Icons.volume_off),
-      // ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -51,23 +66,43 @@ class VolumeControlPage extends StatelessWidget {
                   child: const Icon(Icons.play_arrow, size: 36),
                 ),
 
-                // Volume Up (Top)
+                // Volume Up (Top) — tap and hold
                 Positioned(
                   top: 20,
-                  child: IconButton(
-                    icon: const Icon(Icons.volume_up, size: 30),
-                    onPressed: () =>
-                        appState.sendCommand(Command.volumeUp.value),
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTapDown: (_) =>
+                          _startSending(appState, Command.volumeUp.value),
+                      onTapUp: (_) => _stopSending(),
+                      onTapCancel: _stopSending,
+                      child: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.volume_up, size: 30),
+                      ),
+                    ),
                   ),
                 ),
 
-                // Volume Down (Bottom)
+                // Volume Down (Bottom) — tap and hold
                 Positioned(
                   bottom: 20,
-                  child: IconButton(
-                    icon: const Icon(Icons.volume_down, size: 30),
-                    onPressed: () =>
-                        appState.sendCommand(Command.volumeDown.value),
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTapDown: (_) =>
+                          _startSending(appState, Command.volumeDown.value),
+                      onTapUp: (_) => _stopSending(),
+                      onTapCancel: _stopSending,
+                      child: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.volume_down, size: 30),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -94,12 +129,9 @@ class VolumeControlPage extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 20),
-
-          // Volume Slider
-
-          // mute Button
           const SizedBox(height: 40),
+
+          // Mute Button
           IconButton(
             icon: const Icon(Icons.volume_off, size: 32),
             onPressed: () => appState.sendCommand(Command.volumeMute.value),
