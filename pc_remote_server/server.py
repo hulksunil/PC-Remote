@@ -45,7 +45,7 @@ class Command(Enum):
     PLAY_PAUSE = 'PLAY_PAUSE'
     NEXT_TRACK = 'NEXT_TRACK'
     PREVIOUS_TRACK = 'PREVIOUS_TRACK'
-    PRESS_KEY = 'PRESS_KEY'
+    TYPE = 'TYPE'
     MOVE_MOUSE = 'MOVE_MOUSE'
     CLICK_LEFT = 'CLICK_LEFT'
     CLICK_RIGHT = 'CLICK_RIGHT'
@@ -108,16 +108,16 @@ def handle_client(client_socket):
                     client_socket.send("Toggled play/pause".encode())
                 elif command == str(Command.NEXT_TRACK):
                     MediaControls.send_media_next_track()
-                    client_socket.send("Next track".encode())
+                    client_socket.send("Next track".encode())HELLO
                 elif command == str(Command.PREVIOUS_TRACK):
                     MediaControls.send_media_previous_track()
                     client_socket.send("Previous track".encode())
                 # elif command.startswith(str(Command.MOVE_MOUSE)):
                 #     # we need to separate the individual commands by the ; first
 
-                elif command.startswith(str(Command.PRESS_KEY)):
+                elif command.startswith(str(Command.TYPE)):
                     key = command.split(':')[1]
-                    pyautogui.press(key)
+                    pyautogui.typewrite(key)
                     client_socket.send(f"Pressed {key}".encode())
                 elif command == str(Command.CLICK_LEFT):
                     pyautogui.click()
