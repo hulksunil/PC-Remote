@@ -8,9 +8,7 @@ import 'package:pc_remote_client/settings_page.dart';
 
 // NOTE: dart.io is used for socket communication only for mobile
 // NOTE: For web, you would typically use WebSockets or HTTP requests since web apps are not allowed to use sockets directly due to security restrictions.
-void main() => runApp(
-      const MyApp(),
-    );
+void main() => runApp(const MyApp());
 
 // NOTE: The main function is the entry point of the application.
 class MyApp extends StatelessWidget {
@@ -32,9 +30,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MainAppBar({
-    super.key,
-  });
+  const MainAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -49,9 +45,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const SettingsPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
             );
           },
         ),
