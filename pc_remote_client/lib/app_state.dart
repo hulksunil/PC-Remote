@@ -17,7 +17,19 @@ class AppState extends ChangeNotifier {
   DateTime _lastMouseSend = DateTime.now();
 
   void sendMouseMove(int dx, int dy) {
-    if (udpSocket == null || serverAddress == null) return;
+    if (udpSocket == null || serverAddress == null) {
+      Fluttertoast.showToast(
+        msg: "Device not connected to server, please reconnect",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      navigatorKey.currentState
+          ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+      return;
+    }
 
     final now = DateTime.now();
     if (now.difference(_lastMouseSend).inMilliseconds < 25) return;
@@ -51,6 +63,7 @@ class AppState extends ChangeNotifier {
             ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
       }
     } catch (e) {
+      // TODO(sunil): Check if this works properly
       print('Error sending command: $e');
       Fluttertoast.showToast(
         msg: "Socket was closed, please reconnect",

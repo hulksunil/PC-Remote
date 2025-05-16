@@ -56,7 +56,7 @@ class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
   Offset _accumulatedDelta = Offset.zero;
   DateTime _lastSentTime = DateTime.now();
-  final int _throttleDelayMs = 60;
+  final int _throttleDelayMs = 90;
 
   void _handlePanStart(DragStartDetails details) {
     _lastPosition = details.localPosition;
