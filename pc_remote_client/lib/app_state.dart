@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:pc_remote_client/navigation_service.dart';
+import 'package:pc_remote_client/settings_page.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AppState extends ChangeNotifier {
   String _ip = '';
@@ -32,10 +35,35 @@ class AppState extends ChangeNotifier {
 
   void sendCommand(String command) {
     print('Sending command: $command');
-    if (socket != null) {
-      socket!.write(command);
-    } else {
-      print('Socket is not connected');
+    try {
+      if (socket != null) {
+        socket!.write(command);
+      } else {
+        Fluttertoast.showToast(
+          msg: "Device not connected to server, please reconnect",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black54,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+        navigatorKey.currentState
+            ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+      }
+    } catch (e) {
+      print('Error sending command: $e');
+      Fluttertoast.showToast(
+        msg: "Socket was closed, please reconnect",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      socket?.destroy();
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (_) => SettingsPage()),
+      );
     }
   }
 

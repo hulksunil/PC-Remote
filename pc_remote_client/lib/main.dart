@@ -5,6 +5,7 @@ import 'package:pc_remote_client/mouse_control_page.dart';
 import 'package:pc_remote_client/keyboard_control_page.dart';
 import 'package:pc_remote_client/volume_control_page.dart';
 import 'package:pc_remote_client/settings_page.dart';
+import 'package:pc_remote_client/navigation_service.dart';
 
 // NOTE: dart.io is used for socket communication only for mobile
 // NOTE: For web, you would typically use WebSockets or HTTP requests since web apps are not allowed to use sockets directly due to security restrictions.
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => AppState(),
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'PC Remote Client',
         theme: ThemeData(
           useMaterial3: true,
