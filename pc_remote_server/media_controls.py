@@ -1,6 +1,7 @@
 import ctypes
-# from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from ctypes import cast, POINTER
+from comtypes import CLSCTX_ALL
 
 # Define the constants for media keys
 MEDIA_PLAY_PAUSE = 0xB3
@@ -57,6 +58,18 @@ class MediaControls:
         ctypes.windll.user32.keybd_event(0xAD, 0, 0, 0)  # VK_VOLUME_MUTE down
         ctypes.windll.user32.keybd_event(
             0xAD, 0, KEYEVENTF_KEYUP, 0)  # VK_VOLUME_MUTE up
+
+    @staticmethod
+    def get_volume():
+        """Get the current system volume level."""
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        # Returns value between 0.0 and 1.0
+        current = volume.GetMasterVolumeLevelScalar()
+        print(f"Current volume level: {current}")
+        return round(current * 100)
 
 
 # Simulate system volume keys (shows Windows volume overlay)

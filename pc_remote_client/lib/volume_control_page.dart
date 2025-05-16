@@ -13,11 +13,28 @@ class VolumeControlPage extends StatefulWidget {
 
 class _VolumeControlPageState extends State<VolumeControlPage> {
   Timer? _holdTimer;
+  String currentVolume = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentVolume(); // Fetch volume when page opens
+  }
+
+  void _fetchCurrentVolume() async {
+    var appState = context.read<AppState>();
+    String response =
+        await appState.sendCommandAndGetResponse(Command.currentVolume.value);
+    setState(() {
+      currentVolume = response;
+    });
+  }
 
   void _startSending(AppState appState, String command) {
-    appState.sendCommand(command); // send once
+    appState.sendCommand(command);
     _holdTimer = Timer.periodic(const Duration(milliseconds: 150), (_) {
       appState.sendCommand(command);
+      _fetchCurrentVolume();
     });
   }
 
@@ -34,6 +51,11 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Text(
+            "Volume Level: $currentVolume",
+            style: const TextStyle(fontSize: 24),
+          ),
+          const SizedBox(height: 20),
           Center(
             child: Stack(
               alignment: Alignment.center,
@@ -55,7 +77,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
                   ),
                 ),
 
-                // Play/Pause in the center
+                // Play/Pause in center
                 ElevatedButton(
                   onPressed: () =>
                       appState.sendCommand(Command.playPause.value),
@@ -66,7 +88,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
                   child: const Icon(Icons.play_arrow, size: 36),
                 ),
 
-                // Volume Up (Top) — tap and hold
+                // Volume Up
                 Positioned(
                   top: 20,
                   child: Material(
@@ -86,7 +108,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
                   ),
                 ),
 
-                // Volume Down (Bottom) — tap and hold
+                // Volume Down
                 Positioned(
                   bottom: 20,
                   child: Material(
@@ -106,7 +128,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
                   ),
                 ),
 
-                // Previous Track (Left)
+                // Previous
                 Positioned(
                   left: 20,
                   child: IconButton(
@@ -116,7 +138,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
                   ),
                 ),
 
-                // Next Track (Right)
+                // Next
                 Positioned(
                   right: 20,
                   child: IconButton(
@@ -128,10 +150,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
               ],
             ),
           ),
-
           const SizedBox(height: 40),
-
-          // Mute Button
           IconButton(
             icon: const Icon(Icons.volume_off, size: 32),
             onPressed: () => appState.sendCommand(Command.volumeMute.value),

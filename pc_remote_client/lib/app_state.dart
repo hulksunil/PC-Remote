@@ -39,6 +39,28 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<String> sendCommandAndGetResponse(String command) async {
+    print('Sending command: $command');
+    if (socket != null) {
+      socket!.write(command);
+      socket!.flush();
+
+      try {
+        // Await the first response from the socket
+        List<int> data = await socket!.first;
+        String response = utf8.decode(data);
+        print('Received response: $response');
+        return response;
+      } catch (e) {
+        print('Error receiving response: $e');
+        return '';
+      }
+    } else {
+      print('Socket is not connected');
+      return '';
+    }
+  }
+
   Future<void> connectToServer(String ip, int port) async {
     try {
       serverAddress = InternetAddress(ip);

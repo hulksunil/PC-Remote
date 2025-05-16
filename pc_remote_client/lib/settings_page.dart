@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
-import 'package:network_info_plus/network_info_plus.dart';
 
 const PORT = 5555;
 
@@ -13,8 +12,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String ip = '';
-
   final TextEditingController _ipController = TextEditingController();
 
   String HOST = '';
@@ -32,17 +29,6 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            ElevatedButton(
-                onPressed: () {
-                  NetworkInfo().getWifiIP().then((value) {
-                    setState(() {
-                      ip = value ?? 'Unable to get IP';
-                    });
-                  });
-                },
-                child: const Text("Display Your IP")),
-            Text('Your IP: $ip', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 5),
             ElevatedButton(
                 onPressed: () {
                   setState(() {
