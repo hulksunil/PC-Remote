@@ -67,20 +67,29 @@ class _TouchpadState extends State<Touchpad> {
 
   void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
     final now = DateTime.now();
-
     final delta =
         details.localPosition - (_lastPosition ?? details.localPosition);
+    final elapsed = now.difference(_lastSentTime).inMilliseconds;
+
     _accumulatedDelta += delta;
     _lastPosition = details.localPosition;
 
-    if (now.difference(_lastSentTime).inMilliseconds >= _throttleDelayMs) {
+    if (elapsed >= _throttleDelayMs) {
       _lastSentTime = now;
 
-      appState.sendMouseMove(
-        (_accumulatedDelta.dx * sensitivity).round(),
-        (_accumulatedDelta.dy * sensitivity).round(),
-      );
+      final distance = _accumulatedDelta.distance;
+      final speed = distance / elapsed.clamp(1, 1000); // pixels/ms
 
+      // Hybrid movement: base + speed boost
+      const baseSensitivity = 2.0;
+      final speedMultiplier = (speed * 5).clamp(0.0, 3.0); // boost factor
+
+      final dx =
+          (_accumulatedDelta.dx * (baseSensitivity + speedMultiplier)).round();
+      final dy =
+          (_accumulatedDelta.dy * (baseSensitivity + speedMultiplier)).round();
+
+      appState.sendMouseMove(dx, dy);
       _accumulatedDelta = Offset.zero;
     }
   }
