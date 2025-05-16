@@ -61,6 +61,7 @@ class _TouchpadState extends State<Touchpad> {
   void _handlePanStart(DragStartDetails details) {
     _lastPosition = details.localPosition;
     _accumulatedDelta = Offset.zero;
+    _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0); // reset
   }
 
   final double sensitivity = 3; // Sensitivity multiplier
@@ -69,27 +70,24 @@ class _TouchpadState extends State<Touchpad> {
     final now = DateTime.now();
     final delta =
         details.localPosition - (_lastPosition ?? details.localPosition);
-    final elapsed = now.difference(_lastSentTime).inMilliseconds;
-
     _accumulatedDelta += delta;
     _lastPosition = details.localPosition;
 
-    if (elapsed >= _throttleDelayMs) {
+    const double minMovementThreshold = 1.5;
+    final elapsed = now.difference(_lastSentTime).inMilliseconds;
+
+    if (_accumulatedDelta.distance >= minMovementThreshold &&
+        elapsed >= _throttleDelayMs) {
       _lastSentTime = now;
 
-      final distance = _accumulatedDelta.distance;
-      final speed = distance / elapsed.clamp(1, 1000); // pixels/ms
+      final speed = _accumulatedDelta.distance / elapsed.clamp(1, 1000);
+      final velocityBoost = (speed * 3).clamp(1.0, 3.0);
 
-      // Hybrid movement: base + speed boost
-      const baseSensitivity = 2.0;
-      final speedMultiplier = (speed * 5).clamp(0.0, 3.0); // boost factor
+      appState.sendMouseMove(
+        (_accumulatedDelta.dx * sensitivity * velocityBoost).round(),
+        (_accumulatedDelta.dy * sensitivity * velocityBoost).round(),
+      );
 
-      final dx =
-          (_accumulatedDelta.dx * (baseSensitivity + speedMultiplier)).round();
-      final dy =
-          (_accumulatedDelta.dy * (baseSensitivity + speedMultiplier)).round();
-
-      appState.sendMouseMove(dx, dy);
       _accumulatedDelta = Offset.zero;
     }
   }
