@@ -19,27 +19,7 @@ class _MouseControlPageState extends State<MouseControlPage> {
         ),
         const SizedBox(width: 2),
         // Right-side scrollbar or simulated vertical strip
-        Container(
-          width: 40,
-          color: Colors.grey[300],
-          child: Column(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: () {
-                  context.read<AppState>().sendCommand("SCROLL:300");
-                },
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.arrow_downward),
-                onPressed: () {
-                  context.read<AppState>().sendCommand("SCROLL:-300");
-                },
-              ),
-            ],
-          ),
-        )
+        ScrollbarControl(),
       ],
     );
   }
@@ -114,6 +94,90 @@ class _TouchpadState extends State<Touchpad> {
         child: const Text(
           'Touch and drag to move the mouse',
           style: TextStyle(fontSize: 20),
+        ),
+      ),
+    );
+  }
+}
+
+class ScrollbarControl extends StatefulWidget {
+  const ScrollbarControl({super.key});
+
+  @override
+  State<ScrollbarControl> createState() => _ScrollbarControlState();
+}
+
+class _ScrollbarControlState extends State<ScrollbarControl> {
+  double _dragStartY = 0;
+  double _accumulatedDelta = 0;
+  DateTime _lastSentTime = DateTime.now();
+  final int _throttleDelayMs = 90;
+  final double _threshold = 8; // minimum vertical drag before sending scroll
+
+  void _handleDragStart(DragStartDetails details) {
+    _dragStartY = details.localPosition.dy;
+    _accumulatedDelta = 0;
+  }
+
+  void _handleDragUpdate(AppState appState, DragUpdateDetails details) {
+    final now = DateTime.now();
+    final dy = details.localPosition.dy - _dragStartY;
+    _dragStartY = details.localPosition.dy;
+
+    _accumulatedDelta += dy;
+
+    if (now.difference(_lastSentTime).inMilliseconds >= _throttleDelayMs &&
+        _accumulatedDelta.abs() >= _threshold) {
+      _lastSentTime = now;
+
+      final scrollAmount = (_accumulatedDelta * 5).round();
+      appState.sendScroll(scrollAmount);
+      _accumulatedDelta = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = context.read<AppState>();
+
+    return Container(
+      width: 60, // increased width for easier touch
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: GestureDetector(
+        behavior:
+            HitTestBehavior.opaque, // ensures the whole container is touchable
+        onVerticalDragStart: _handleDragStart,
+        onVerticalDragUpdate: (details) => _handleDragUpdate(appState, details),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0), // extra spacing
+          child: Column(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_upward),
+                onPressed: () {
+                  appState.sendScroll(300);
+                },
+              ),
+              const Expanded(
+                child: Center(
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: Icon(Icons.drag_handle, size: 20),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_downward),
+                onPressed: () {
+                  appState.sendScroll(-300);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

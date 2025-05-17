@@ -40,6 +40,26 @@ class AppState extends ChangeNotifier {
     udpSocket!.send(data, serverAddress!, udpPort);
   }
 
+  void sendScroll(int dy) {
+    if (udpSocket == null || serverAddress == null) {
+      Fluttertoast.showToast(
+        msg: "Device not connected to server, please reconnect",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      navigatorKey.currentState
+          ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+      return;
+    }
+
+    final command = "SCROLL:$dy;";
+    final data = utf8.encode(command);
+    udpSocket!.send(data, serverAddress!, udpPort);
+  }
+
   void setIp(String ip) {
     _ip = ip;
     notifyListeners();

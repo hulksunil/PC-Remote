@@ -78,6 +78,15 @@ def start_udp_mouse_server():
             except Exception as e:
                 print(f"Error handling UDP mouse move: {e}")
 
+        elif command.startswith(str(Command.SCROLL)):
+            individual_commands = command.split(';')
+            for individual_command in individual_commands:
+                _, dy = command.split(":")
+                dy = int(dy.strip(";"))
+                if abs(dy) > 1:
+                    pyautogui.scroll(dy)
+                    print(f"Scrolling: dy={dy}")
+
 
 def handle_client(client_socket):
     """Handles the client connection and receives data."""
@@ -119,13 +128,6 @@ def handle_client(client_socket):
                     pyautogui.click()
                 elif command == str(Command.CLICK_RIGHT):
                     pyautogui.click(button='right')
-                elif command.startswith(str(Command.SCROLL)):
-                    _, dy = command.split(":")
-                    dy = int(dy)
-                    if abs(dy) > 1:
-                        pyautogui.scroll(dy)
-                        print(f"Scrolling: dy={dy}")
-
             else:
                 break
         except Exception as e:
