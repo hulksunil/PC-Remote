@@ -27,14 +27,14 @@ class _MouseControlPageState extends State<MouseControlPage> {
               IconButton(
                 icon: const Icon(Icons.arrow_upward),
                 onPressed: () {
-                  context.read<AppState>().sendCommand("SCROLL_UP");
+                  context.read<AppState>().sendCommand("SCROLL:300");
                 },
               ),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.arrow_downward),
                 onPressed: () {
-                  context.read<AppState>().sendCommand("SCROLL_DOWN");
+                  context.read<AppState>().sendCommand("SCROLL:-300");
                 },
               ),
             ],
