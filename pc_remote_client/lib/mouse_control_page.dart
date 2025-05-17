@@ -130,7 +130,7 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
         _accumulatedDelta.abs() >= _threshold) {
       _lastSentTime = now;
 
-      final scrollAmount = (_accumulatedDelta * 5).round();
+      final scrollAmount = -(_accumulatedDelta * 5).round();
       appState.sendScroll(scrollAmount);
       _accumulatedDelta = 0;
     }
@@ -142,7 +142,6 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
 
     return Container(
       width: 60, // increased width for easier touch
-      margin: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(10),
