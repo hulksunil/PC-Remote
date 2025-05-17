@@ -1,4 +1,5 @@
 import socket
+import time
 
 HOST = '192.168.2.12'  # Change if needed
 PORT = 5555
@@ -21,6 +22,10 @@ def get_command(choice):
     elif choice == '6':
         combo = input("Enter key combo (e.g. ctrl+c): ").lower()
         return f"KEY_COMBO:{combo}"
+    elif choice == '7':
+        dy = input("Enter int scroll dy: ")
+        return f"SCROLL:{dy}"
+
     return None
 
 
@@ -32,6 +37,7 @@ def print_menu():
     print("4. Move Mouse")
     print("5. Press Single Key")
     print("6. Key Combo")
+    print("7. scroll:dy")
     print("0. Exit")
 
 
@@ -54,9 +60,12 @@ def start_client():
                 print("Invalid choice. Try again.")
                 continue
 
+            print(f"Sending command in 1 second: {command}")
+            time.sleep(2)
             client_socket.send(command.encode())
-            response = client_socket.recv(1024).decode()
-            print(f"Server response: {response}")
+            time.sleep(1)
+            # response = client_socket.recv(1024).decode()
+            # print(f"Server response: {response}")
 
     except KeyboardInterrupt:
         print("\nInterrupted by user.")

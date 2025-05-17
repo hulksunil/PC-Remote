@@ -52,6 +52,7 @@ class Command(Enum):
     MOVE_MOUSE = 'MOVE_MOUSE'
     CLICK_LEFT = 'CLICK_LEFT'
     CLICK_RIGHT = 'CLICK_RIGHT'
+    SCROLL = 'SCROLL'
 
     def __str__(self):
         return self.value
@@ -96,41 +97,35 @@ def handle_client(client_socket):
             if command:
                 print(f"Received command: {command}")
                 if command == str(Command.VOLUME_UP):
-                    # adjust_volume(volume, 0.25)  # Increase volume by 2%
                     MediaControls.volume_up()
-                    # client_socket.send("Volume increased by 2%".encode())
                 elif command == str(Command.VOLUME_DOWN):
-                    # adjust_volume(volume, -0.25)  # Decrease volume by 2%
                     MediaControls.volume_down()
-                    # client_socket.send("Volume decreased by 2%".encode())
                 elif command == str(Command.VOLUME_MUTE):
                     MediaControls.volume_mute()
-                    # client_socket.send("Toggled mute".encode())
                 elif command == str(Command.PLAY_PAUSE):
                     MediaControls.send_media_play_pause()
-                    # client_socket.send("Toggled play/pause".encode())
                 elif command == str(Command.NEXT_TRACK):
                     MediaControls.send_media_next_track()
-                    # client_socket.send("Next track".encode())
                 elif command == str(Command.PREVIOUS_TRACK):
                     MediaControls.send_media_previous_track()
-                    # client_socket.send("Previous track".encode())
                 elif command == str(Command.CURRENT_VOLUME):
                     volume_level = MediaControls.get_volume()  # Get current volume level
                     client_socket.send(f"{volume_level}".encode())
-                # elif command.startswith(str(Command.MOVE_MOUSE)):
-                #     # we need to separate the individual commands by the ; first
 
                 elif command.startswith(str(Command.TYPE)):
                     key = command.split(':')[1]
                     pyautogui.typewrite(key)
-                    # client_socket.send(f"Pressed {key}".encode())
                 elif command == str(Command.CLICK_LEFT):
                     pyautogui.click()
-                    # client_socket.send("Left mouse button clicked".encode())
                 elif command == str(Command.CLICK_RIGHT):
                     pyautogui.click(button='right')
-                    # client_socket.send("Right mouse button clicked".encode())
+                elif command.startswith(str(Command.SCROLL)):
+                    _, dy = command.split(":")
+                    dy = int(dy)
+                    if abs(dy) > 1:
+                        pyautogui.scroll(dy)
+                        print(f"Scrolling: dy={dy}")
+
             else:
                 break
         except Exception as e:
