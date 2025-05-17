@@ -6,7 +6,8 @@ enum Command {
   playPause,
   nextTrack,
   previousTrack,
-  pressKeyA,
+  clickLeft,
+  clickRight,
 }
 
 extension CommandExtension on Command {
@@ -28,8 +29,10 @@ extension CommandExtension on Command {
         return "NEXT_TRACK";
       case Command.previousTrack:
         return "PREVIOUS_TRACK";
-      case Command.pressKeyA:
-        return "PRESS_KEY:a";
+      case Command.clickLeft:
+        return "CLICK_LEFT";
+      case Command.clickRight:
+        return "CLICK_RIGHT";
     }
   }
 }

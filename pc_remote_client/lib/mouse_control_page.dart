@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
+import 'package:pc_remote_client/command.dart';
 
 class MouseControlPage extends StatefulWidget {
   const MouseControlPage({super.key});
@@ -81,21 +82,61 @@ class _TouchpadState extends State<Touchpad> {
   Widget build(BuildContext context) {
     final appState = context.read<AppState>();
 
-    return GestureDetector(
-      onPanStart: _handlePanStart,
-      onPanUpdate: (details) => _handlePanUpdate(appState, details),
-      onPanEnd: _handlePanEnd,
-      onTap: () {
-        appState.sendCommand("CLICK_LEFT");
-      },
-      child: Container(
-        color: Colors.black12,
-        alignment: Alignment.center,
-        child: const Text(
-          'Touch and drag to move the mouse',
-          style: TextStyle(fontSize: 20),
+    return Column(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onPanStart: _handlePanStart,
+            onPanUpdate: (details) => _handlePanUpdate(appState, details),
+            onPanEnd: _handlePanEnd,
+            onTap: () {
+              appState.sendCommand("CLICK_LEFT");
+            },
+            child: Container(
+              color: Colors.black12,
+              alignment: Alignment.center,
+              child: const Text(
+                'Touch and drag to move the mouse',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ),
         ),
-      ),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                  onPressed: () =>
+                      appState.sendCommand(Command.clickLeft.value),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.grey[400], // Slightly different shade
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero, // No rounding
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 30), // Make them touch-friendly
+                  ),
+                  child: const Text("")),
+            ),
+            Expanded(
+              child: ElevatedButton(
+                  onPressed: () =>
+                      appState.sendCommand(Command.clickRight.value),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.grey[400], // Slightly different shade
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero, // No rounding
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 30), // Make them touch-friendly
+                  ),
+                  child: const Text("")),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
