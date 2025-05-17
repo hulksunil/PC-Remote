@@ -38,19 +38,79 @@ class _TouchpadState extends State<Touchpad> {
   Offset _accumulatedDelta = Offset.zero;
   DateTime _lastSentTime = DateTime.now();
   final int _throttleDelayMs = 90;
+  final double sensitivity = 3;
+  final double scrollMultiplier = 5;
 
-  void _handlePanStart(DragStartDetails details) {
-    _lastPosition = details.localPosition;
-    _accumulatedDelta = Offset.zero;
-    _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0); // reset
+  int _activePointers = 0;
+  bool _isTwoFingerGesture = false;
+  bool _readyForScroll = false;
+
+  DateTime? _twoFingerTapStart;
+  Offset? _twoFingerTapStartPos;
+  bool _potentialTwoFingerTap = false;
+
+  bool _suppressNextTap = false;
+
+  void _handlePointerDown(PointerDownEvent event) {
+    _activePointers++;
+    if (_activePointers == 2) {
+      _isTwoFingerGesture = true;
+      _readyForScroll = false;
+
+      // Start tracking for potential two-finger tap
+      _twoFingerTapStart = DateTime.now();
+      _twoFingerTapStartPos = event.position;
+      _potentialTwoFingerTap = true;
+    }
   }
 
-  final double sensitivity = 3; // Sensitivity multiplier
+  void _handlePointerUp(PointerUpEvent event) {
+    _activePointers = (_activePointers - 1).clamp(0, 10);
+
+    if (_activePointers < 2) {
+      _isTwoFingerGesture = false;
+
+      if (_potentialTwoFingerTap && _twoFingerTapStart != null) {
+        final duration =
+            DateTime.now().difference(_twoFingerTapStart!).inMilliseconds;
+        final distance = (event.position - _twoFingerTapStartPos!).distance;
+
+        if (duration < 200 && distance < 20) {
+          final appState = context.read<AppState>();
+          appState.sendCommand("CLICK_RIGHT");
+
+          _suppressNextTap = true; // Suppress left click
+        }
+
+        _potentialTwoFingerTap = false;
+      }
+    }
+  }
+
+  void _handlePanStart(DragStartDetails details) {
+    // When a two-finger gesture starts, reset position to avoid jump
+    if (_isTwoFingerGesture) {
+      _lastPosition = details.localPosition;
+      _accumulatedDelta = Offset.zero;
+      _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
+    } else {
+      _lastPosition = details.localPosition;
+      _accumulatedDelta = Offset.zero;
+      _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
+    }
+  }
 
   void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
     final now = DateTime.now();
-    final delta =
-        details.localPosition - (_lastPosition ?? details.localPosition);
+
+    if (_lastPosition == null || (_isTwoFingerGesture && !_readyForScroll)) {
+      _lastPosition = details.localPosition;
+      _accumulatedDelta = Offset.zero;
+      _readyForScroll = true; // Now we’re ready
+      return;
+    }
+
+    final delta = details.localPosition - _lastPosition!;
     _accumulatedDelta += delta;
     _lastPosition = details.localPosition;
 
@@ -61,19 +121,28 @@ class _TouchpadState extends State<Touchpad> {
         elapsed >= _throttleDelayMs) {
       _lastSentTime = now;
 
-      final speed = _accumulatedDelta.distance / elapsed.clamp(1, 1000);
-      final velocityBoost = (speed * 3).clamp(1.0, 3.0);
-
-      appState.sendMouseMove(
-        (_accumulatedDelta.dx * sensitivity * velocityBoost).round(),
-        (_accumulatedDelta.dy * sensitivity * velocityBoost).round(),
-      );
+      if (_isTwoFingerGesture) {
+        final scrollAmount = (-_accumulatedDelta.dy * scrollMultiplier).round();
+        if (scrollAmount.abs() > 10) {
+          appState.sendScroll(scrollAmount);
+        }
+      } else {
+        final speed = _accumulatedDelta.distance / elapsed.clamp(1, 1000);
+        final velocityBoost = (speed * 3).clamp(1.0, 3.0);
+        appState.sendMouseMove(
+          (_accumulatedDelta.dx * sensitivity * velocityBoost).round(),
+          (_accumulatedDelta.dy * sensitivity * velocityBoost).round(),
+        );
+      }
 
       _accumulatedDelta = Offset.zero;
     }
   }
 
-  void _handlePanEnd(DragEndDetails details) {
+  void _handlePanEnd(AppState appState, DragEndDetails details) {
+    if (_isTwoFingerGesture && _accumulatedDelta.distance < 10) {
+      appState.sendCommand("CLICK_RIGHT"); // Treat it as a right-click
+    }
     _lastPosition = null;
     _accumulatedDelta = Offset.zero;
   }
@@ -85,19 +154,31 @@ class _TouchpadState extends State<Touchpad> {
     return Column(
       children: [
         Expanded(
-          child: GestureDetector(
-            onPanStart: _handlePanStart,
-            onPanUpdate: (details) => _handlePanUpdate(appState, details),
-            onPanEnd: _handlePanEnd,
-            onTap: () {
-              appState.sendCommand("CLICK_LEFT");
-            },
-            child: Container(
-              color: Colors.black12,
-              alignment: Alignment.center,
-              child: const Text(
-                'Touch and drag to move the mouse',
-                style: TextStyle(fontSize: 20),
+          child: Listener(
+            onPointerDown: _handlePointerDown,
+            onPointerUp: _handlePointerUp,
+            child: GestureDetector(
+              onPanStart: _handlePanStart,
+              onPanUpdate: (details) => _handlePanUpdate(appState, details),
+              onPanEnd: (details) => _handlePanEnd(appState, details),
+              onTap: () {
+                if (_suppressNextTap) {
+                  _suppressNextTap = false;
+                  return; // Don't do left-click
+                }
+
+                if (!_isTwoFingerGesture) {
+                  appState.sendCommand("CLICK_LEFT");
+                }
+              },
+              child: Container(
+                color: Colors.black12,
+                alignment: Alignment.center,
+                child: const Text(
+                  'Touch and drag to move the mouse\nTwo-finger drag to scroll\nTwo-finger tap to right-click',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ),
@@ -106,33 +187,29 @@ class _TouchpadState extends State<Touchpad> {
           children: [
             Expanded(
               child: ElevatedButton(
-                  onPressed: () =>
-                      appState.sendCommand(Command.clickLeft.value),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.grey[400], // Slightly different shade
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero, // No rounding
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 30), // Make them touch-friendly
+                onPressed: () => appState.sendCommand(Command.clickLeft.value),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[400],
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
-                  child: const Text("")),
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                ),
+                child: const Text(""),
+              ),
             ),
             Expanded(
               child: ElevatedButton(
-                  onPressed: () =>
-                      appState.sendCommand(Command.clickRight.value),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.grey[400], // Slightly different shade
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero, // No rounding
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 30), // Make them touch-friendly
+                onPressed: () => appState.sendCommand(Command.clickRight.value),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[400],
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
-                  child: const Text("")),
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                ),
+                child: const Text(""),
+              ),
             ),
           ],
         ),
