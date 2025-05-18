@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
 
-const PORT = 5555;
-
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -44,7 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   setState(() {
                     HOST = _ipController.text;
                   });
-                  appState.connectToServer(HOST, PORT);
+                  appState.connectToServer(HOST);
                 },
                 child: const Text("Connect to PC real ")),
             const SizedBox(height: 16),

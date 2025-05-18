@@ -13,7 +13,8 @@ class AppState extends ChangeNotifier {
   Socket? socket; // TCP
   RawDatagramSocket? udpSocket; // UDP
   InternetAddress? serverAddress;
-  final int udpPort = 5556;
+  final int udpPort = 5556; // UDP port
+  final int port = 5555; // TCP port
 
   DateTime _lastMouseSend = DateTime.now();
 
@@ -138,7 +139,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> connectToServer(String ip, int port) async {
+  Future<void> connectToServer(String ip) async {
     try {
       serverAddress = InternetAddress(ip);
 
