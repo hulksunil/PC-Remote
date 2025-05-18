@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pc_remote_client/app_state.dart';
+import 'package:pc_remote_client/app/app_state.dart';
 
 class KeyboardControlPage extends StatefulWidget {
   const KeyboardControlPage({super.key});

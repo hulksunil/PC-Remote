@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:pc_remote_client/navigation_service.dart';
-import 'package:pc_remote_client/settings_page.dart';
+import 'package:pc_remote_client/services/navigation_service.dart';
+import 'package:pc_remote_client/pages/settings_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class AppState extends ChangeNotifier {
