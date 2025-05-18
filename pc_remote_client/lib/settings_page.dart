@@ -29,15 +29,6 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    HOST = _ipController.text;
-                  });
-                  appState.connectToServer(HOST, PORT);
-                },
-                child: const Text("Connect to PC real ")),
-            const SizedBox(height: 5),
             TextField(
               controller: _ipController,
               decoration: const InputDecoration(
@@ -47,6 +38,15 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 5),
+            ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    HOST = _ipController.text;
+                  });
+                  appState.connectToServer(HOST, PORT);
+                },
+                child: const Text("Connect to PC real ")),
             const SizedBox(height: 16),
             if (appState.socket != null)
               Text(

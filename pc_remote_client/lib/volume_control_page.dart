@@ -45,6 +45,11 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
     // Optionally, you can fetch the current volume again after stopping
   }
 
+  double _parseVolumeLevel(String volumeString) {
+    final volume = int.tryParse(volumeString) ?? 0;
+    return (volume.clamp(0, 100)) / 100.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<AppState>();
@@ -53,9 +58,25 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "Volume Level: $currentVolume",
-            style: const TextStyle(fontSize: 24),
+          Column(
+            children: [
+              const Text("Volume", style: TextStyle(fontSize: 20)),
+              const SizedBox(height: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 350),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: _parseVolumeLevel(currentVolume),
+                    minHeight: 20,
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text("$currentVolume%", style: const TextStyle(fontSize: 16)),
+            ],
           ),
           const SizedBox(height: 20),
           Center(
