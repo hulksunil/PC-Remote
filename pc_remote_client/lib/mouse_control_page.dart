@@ -171,13 +171,27 @@ class _TouchpadState extends State<Touchpad> {
                   appState.sendCommand("CLICK_LEFT");
                 }
               },
-              child: Container(
-                color: Colors.black12,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 alignment: Alignment.center,
-                child: const Text(
-                  'Touch and drag to move the mouse\nTwo-finger drag to scroll\nTwo-finger tap to right-click',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                child: const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Touch and drag to move the mouse\nTwo-finger drag to scroll\nTwo-finger tap to right-click',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
             ),
@@ -189,12 +203,13 @@ class _TouchpadState extends State<Touchpad> {
               child: ElevatedButton(
                 onPressed: () => appState.sendCommand(Command.clickLeft.value),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[400],
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 30),
-                ),
+                    // backgroundColor: Colors.grey[400],
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryFixedDim),
                 child: const Text(""),
               ),
             ),
@@ -202,12 +217,13 @@ class _TouchpadState extends State<Touchpad> {
               child: ElevatedButton(
                 onPressed: () => appState.sendCommand(Command.clickRight.value),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[400],
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 30),
-                ),
+                    // backgroundColor: Colors.grey[400],
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryFixedDim),
                 child: const Text(""),
               ),
             ),
@@ -257,43 +273,46 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
   @override
   Widget build(BuildContext context) {
     final appState = context.read<AppState>();
+    final theme = Theme.of(context);
 
-    return Container(
-      width: 60, // increased width for easier touch
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: GestureDetector(
-        behavior:
-            HitTestBehavior.opaque, // ensures the whole container is touchable
-        onVerticalDragStart: _handleDragStart,
-        onVerticalDragUpdate: (details) => _handleDragUpdate(appState, details),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0), // extra spacing
-          child: Column(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: () {
-                  appState.sendScroll(300);
-                },
-              ),
-              const Expanded(
-                child: Center(
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: Icon(Icons.drag_handle, size: 20),
+    return Material(
+      color: theme.colorScheme.surfaceVariant,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragStart: _handleDragStart,
+          onVerticalDragUpdate: (details) =>
+              _handleDragUpdate(appState, details),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_upward,
+                      color: theme.colorScheme.primary),
+                  onPressed: () => appState.sendScroll(300),
+                ),
+                const Expanded(
+                  child: Center(
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: Icon(Icons.drag_handle, size: 20),
+                    ),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_downward),
-                onPressed: () {
-                  appState.sendScroll(-300);
-                },
-              ),
-            ],
+                IconButton(
+                  icon: Icon(Icons.arrow_downward,
+                      color: theme.colorScheme.primary),
+                  onPressed: () => appState.sendScroll(-300),
+                ),
+              ],
+            ),
           ),
         ),
       ),

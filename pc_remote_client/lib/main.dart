@@ -14,18 +14,23 @@ void main() => runApp(const MyApp());
 // NOTE: The main function is the entry point of the application.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AppState(),
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'PC Remote Client',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        ),
-        home: const HomePage(),
+      child: Consumer<AppState>(
+        builder: (context, appState, _) {
+          return MaterialApp(
+            navigatorKey: navigatorKey,
+            title: 'PC Remote Client',
+            theme: ThemeData(
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(seedColor: appState.themeColor),
+            ),
+            home: const HomePage(),
+          );
+        },
       ),
     );
   }

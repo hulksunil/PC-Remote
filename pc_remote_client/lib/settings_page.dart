@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -44,7 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   });
                   appState.connectToServer(HOST);
                 },
-                child: const Text("Connect to PC real ")),
+                child: const Text("Connect to PC ")),
             const SizedBox(height: 16),
             if (appState.socket != null)
               Text(
@@ -56,6 +57,57 @@ class _SettingsPageState extends State<SettingsPage> {
                 padding: const EdgeInsets.only(top: 2),
                 child: Text('Trying to connect to: $HOST'),
               ),
+            const SizedBox(height: 50),
+            OutlinedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    Color pickerColor = context.read<AppState>().themeColor;
+
+                    return AlertDialog(
+                      title: const Text('Pick a Theme Color'),
+                      content: SingleChildScrollView(
+                        child: ColorPicker(
+                          pickerColor: pickerColor,
+                          onColorChanged: (color) {
+                            pickerColor = color;
+                          },
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          child: const Text('Cancel'),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        TextButton(
+                          child: const Text('Select'),
+                          onPressed: () {
+                            context.read<AppState>().setThemeColor(pickerColor);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: Icon(Icons.palette,
+                  color: Theme.of(context).colorScheme.primary),
+              label: Text(
+                "Change Theme Color",
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              ),
+            )
           ],
         ),
       ),

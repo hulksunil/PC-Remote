@@ -10,11 +10,20 @@ class AppState extends ChangeNotifier {
   String _ip = '';
   String get ip => _ip;
 
-  Socket? socket; // TCP
-  RawDatagramSocket? udpSocket; // UDP
   InternetAddress? serverAddress;
+  RawDatagramSocket? udpSocket; // UDP
   final int udpPort = 5556; // UDP port
+  Socket? socket; // TCP
   final int port = 5555; // TCP port
+
+  Color _themeColor =
+      Colors.red; // Default Theme Color (gets changed in settings)
+  Color get themeColor => _themeColor;
+
+  void setThemeColor(Color color) {
+    _themeColor = color;
+    notifyListeners();
+  }
 
   DateTime _lastMouseSend = DateTime.now();
 
