@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -100,20 +101,35 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Completer<String>? _responseCompleter;
+
+  void _setupSocketListener() {
+    socket!.listen((List<int> data) {
+      final response = utf8.decode(data);
+      print('Received response: $response');
+
+      // Complete the waiting future if one exists
+      if (_responseCompleter != null && !_responseCompleter!.isCompleted) {
+        _responseCompleter!.complete(response);
+      }
+    }, onError: (error) {
+      print('Socket error: $error');
+    }, onDone: () {
+      print('Socket closed');
+    });
+  }
+
   Future<String> sendCommandAndGetResponse(String command) async {
     print('Sending command: $command');
     if (socket != null) {
-      socket!.write(command);
-      socket!.flush();
-
       try {
-        // Await the first response from the socket
-        List<int> data = await socket!.first;
-        String response = utf8.decode(data);
-        print('Received response: $response');
-        return response;
+        _responseCompleter = Completer<String>();
+        socket!.write(command);
+        socket!.flush();
+        return await _responseCompleter!.future
+            .timeout(const Duration(seconds: 2)); // Optional timeout
       } catch (e) {
-        print('Error receiving response: $e');
+        print('Error sending or receiving: $e');
         return '';
       }
     } else {
@@ -134,6 +150,7 @@ class AppState extends ChangeNotifier {
       udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
       print("UDP socket bound to ${udpSocket!.port}");
 
+      _setupSocketListener();
       notifyListeners();
     } catch (e) {
       print("Connection error: $e");

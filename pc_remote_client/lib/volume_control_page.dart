@@ -32,6 +32,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
 
   void _startSending(AppState appState, String command) {
     appState.sendCommand(command);
+    _fetchCurrentVolume();
     _holdTimer = Timer.periodic(const Duration(milliseconds: 150), (_) {
       appState.sendCommand(command);
       _fetchCurrentVolume();
@@ -41,6 +42,7 @@ class _VolumeControlPageState extends State<VolumeControlPage> {
   void _stopSending() {
     _holdTimer?.cancel();
     _holdTimer = null;
+    // Optionally, you can fetch the current volume again after stopping
   }
 
   @override
