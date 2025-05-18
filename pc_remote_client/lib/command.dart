@@ -8,6 +8,9 @@ enum Command {
   previousTrack,
   clickLeft,
   clickRight,
+  sleep,
+  shutdown,
+  lock,
 }
 
 extension CommandExtension on Command {
@@ -33,6 +36,13 @@ extension CommandExtension on Command {
         return "CLICK_LEFT";
       case Command.clickRight:
         return "CLICK_RIGHT";
+
+      case Command.sleep:
+        return "SLEEP";
+      case Command.shutdown:
+        return "SHUTDOWN";
+      case Command.lock:
+        return "LOCK";
     }
   }
 }

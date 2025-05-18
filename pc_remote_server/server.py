@@ -2,6 +2,7 @@ import socket
 import pyautogui
 from enum import Enum
 from media_controls import MediaControls
+from power_controls import PowerControls
 import threading
 
 pyautogui.FAILSAFE = False  # Disable fail-safe to prevent mouse movement issues
@@ -53,6 +54,9 @@ class Command(Enum):
     CLICK_LEFT = 'CLICK_LEFT'
     CLICK_RIGHT = 'CLICK_RIGHT'
     SCROLL = 'SCROLL'
+    SLEEP = 'SLEEP'
+    LOCK = 'LOCK'
+    SHUTDOWN = 'SHUTDOWN'
 
     def __str__(self):
         return self.value
@@ -128,6 +132,13 @@ def handle_client(client_socket):
                     pyautogui.click()
                 elif command == str(Command.CLICK_RIGHT):
                     pyautogui.click(button='right')
+                elif command == str(Command.SLEEP):
+                    PowerControls.sleep()
+                elif command == str(Command.LOCK):
+                    PowerControls.lock()
+                elif command == str(Command.SHUTDOWN):
+                    PowerControls.shutdown()
+
             else:
                 break
         except Exception as e:

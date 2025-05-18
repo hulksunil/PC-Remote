@@ -25,7 +25,12 @@ def get_command(choice):
     elif choice == '7':
         dy = input("Enter int scroll dy: ")
         return f"SCROLL:{dy}"
-
+    elif choice == '8':
+        return "SLEEP"
+    elif choice == '9':
+        return "LOCK"
+    elif choice == '10':
+        return "SHUTDOWN"
     return None
 
 
@@ -38,6 +43,9 @@ def print_menu():
     print("5. Press Single Key")
     print("6. Key Combo")
     print("7. scroll:dy")
+    print("8. Sleep")
+    print("9. Lock")
+    print("10. Shutdown")
     print("0. Exit")
 
 

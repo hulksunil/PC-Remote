@@ -6,6 +6,7 @@ import 'package:pc_remote_client/keyboard_control_page.dart';
 import 'package:pc_remote_client/volume_control_page.dart';
 import 'package:pc_remote_client/settings_page.dart';
 import 'package:pc_remote_client/navigation_service.dart';
+import 'package:pc_remote_client/power_control_page.dart';
 
 // NOTE: dart.io is used for socket communication only for mobile
 // NOTE: For web, you would typically use WebSockets or HTTP requests since web apps are not allowed to use sockets directly due to security restrictions.
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
       case 1:
         pageToDisplay = VolumeControlPage();
       case 2:
-        pageToDisplay = Placeholder();
+        pageToDisplay = PowerSettingsPage();
       case 3:
         pageToDisplay = KeyboardControlPage();
       default:

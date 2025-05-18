@@ -33,6 +33,7 @@ class Touchpad extends StatefulWidget {
   State<Touchpad> createState() => _TouchpadState();
 }
 
+// TODO(sunil): fix the issue of it starting with scroll with 1 finger on first connect unless you go to another page and come back
 class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
   Offset _accumulatedDelta = Offset.zero;
