@@ -4,14 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
 import 'package:pc_remote_client/command.dart';
 
-class VolumeControlPage extends StatefulWidget {
-  const VolumeControlPage({super.key});
+class MediaControlPage extends StatefulWidget {
+  const MediaControlPage({super.key});
 
   @override
-  State<VolumeControlPage> createState() => _VolumeControlPageState();
+  State<MediaControlPage> createState() => _MediaControlPageState();
 }
 
-class _VolumeControlPageState extends State<VolumeControlPage> {
+class _MediaControlPageState extends State<MediaControlPage> {
   Timer? _holdTimer;
   String currentVolume = "";
 

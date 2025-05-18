@@ -13,7 +13,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _ipController = TextEditingController();
 
-  String HOST = '';
+  String host = '';
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +41,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    HOST = _ipController.text;
+                    host = _ipController.text;
                   });
-                  appState.connectToServer(HOST);
+                  appState.connectToServer(host);
                 },
                 child: const Text("Connect to PC ")),
             const SizedBox(height: 16),
@@ -52,10 +52,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 'Connected to: ${appState.socket?.remoteAddress.address}:${appState.socket?.remotePort}',
                 style: const TextStyle(fontSize: 18),
               )
-            else if (HOST.isNotEmpty)
+            else if (host.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text('Trying to connect to: $HOST'),
+                child: Text('Trying to connect to: $host'),
               ),
             const SizedBox(height: 50),
             OutlinedButton.icon(

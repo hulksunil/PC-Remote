@@ -22,7 +22,6 @@ class PowerSettingsPage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Power Settings')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -36,7 +35,7 @@ class PowerSettingsPage extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               style: buttonStyle.copyWith(
-                backgroundColor: MaterialStateProperty.all(Colors.redAccent),
+                backgroundColor: WidgetStateProperty.all(Colors.redAccent),
               ),
               onPressed: () =>
                   _sendPowerCommand(context, Command.shutdown.value),

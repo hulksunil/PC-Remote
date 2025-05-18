@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app_state.dart';
 import 'package:pc_remote_client/mouse_control_page.dart';
 import 'package:pc_remote_client/keyboard_control_page.dart';
-import 'package:pc_remote_client/volume_control_page.dart';
+import 'package:pc_remote_client/media_control_page.dart';
 import 'package:pc_remote_client/settings_page.dart';
 import 'package:pc_remote_client/navigation_service.dart';
 import 'package:pc_remote_client/power_control_page.dart';
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         pageToDisplay = MouseControlPage();
       case 1:
-        pageToDisplay = VolumeControlPage();
+        pageToDisplay = MediaControlPage();
       case 2:
         pageToDisplay = PowerSettingsPage();
       case 3:
