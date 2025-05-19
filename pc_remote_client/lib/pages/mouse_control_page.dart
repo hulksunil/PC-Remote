@@ -52,6 +52,10 @@ class _TouchpadState extends State<Touchpad> {
 
   bool _suppressNextTap = false;
 
+  DateTime? _lastTapTime;
+  Offset? _lastTapPosition;
+  bool _isDraggingFromDoubleTap = false;
+
   void _handlePointerDown(AppState appState, PointerDownEvent event) {
     if (!appState.isConnected) {
       appState.navigateToSettingsOnce();
@@ -119,6 +123,13 @@ class _TouchpadState extends State<Touchpad> {
 
     if (_accumulatedDelta.distance >= minMovementThreshold &&
         elapsed >= _throttleDelayMs) {
+      if (_isDraggingFromDoubleTap) {
+        appState.sendMouseMove(
+          (_accumulatedDelta.dx * sensitivity).round(),
+          (_accumulatedDelta.dy * sensitivity).round(),
+        );
+      }
+
       _lastSentTime = now;
 
       if (_isTwoFingerGesture) {
@@ -140,9 +151,15 @@ class _TouchpadState extends State<Touchpad> {
   }
 
   void _handlePanEnd(AppState appState, DragEndDetails details) {
+    if (_isDraggingFromDoubleTap) {
+      appState.sendCommand("MOUSE_UP");
+      _isDraggingFromDoubleTap = false;
+    }
+
     if (_isTwoFingerGesture && _accumulatedDelta.distance < 10) {
       appState.sendCommand("CLICK_RIGHT"); // Treat it as a right-click
     }
+
     _lastPosition = null;
     _accumulatedDelta = Offset.zero;
   }
@@ -161,15 +178,29 @@ class _TouchpadState extends State<Touchpad> {
               onPanStart: _handlePanStart,
               onPanUpdate: (details) => _handlePanUpdate(appState, details),
               onPanEnd: (details) => _handlePanEnd(appState, details),
-              onTap: () {
-                if (_suppressNextTap) {
-                  _suppressNextTap = false;
-                  return; // Don't do left-click
+              onTapDown: (details) {
+                final now = DateTime.now();
+                final pos = details.localPosition;
+
+                if (_lastTapTime != null &&
+                    now.difference(_lastTapTime!).inMilliseconds < 300 &&
+                    (pos - _lastTapPosition!).distance < 20) {
+                  // Detected double tap
+                  _isDraggingFromDoubleTap = true;
+                  appState.sendCommand("MOUSE_DOWN");
                 }
 
-                if (!_isTwoFingerGesture) {
+                _lastTapTime = now;
+                _lastTapPosition = pos;
+              },
+              onTapUp: (details) {
+                if (_isDraggingFromDoubleTap) {
+                  // Do nothing yet; wait for pan end to send mouse up
+                } else if (!_isTwoFingerGesture && !_suppressNextTap) {
                   appState.sendCommand("CLICK_LEFT");
                 }
+
+                _suppressNextTap = false;
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),

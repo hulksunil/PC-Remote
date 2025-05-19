@@ -51,6 +51,8 @@ class Command(Enum):
     CURRENT_VOLUME = 'CURRENT_VOLUME'
     TYPE = 'TYPE'
     MOVE_MOUSE = 'MOVE_MOUSE'
+    MOUSE_DOWN = 'MOUSE_DOWN'
+    MOUSE_UP = 'MOUSE_UP'
     CLICK_LEFT = 'CLICK_LEFT'
     CLICK_RIGHT = 'CLICK_RIGHT'
     SCROLL = 'SCROLL'
@@ -138,6 +140,10 @@ def handle_client(client_socket):
                     PowerControls.lock()
                 elif command == str(Command.SHUTDOWN):
                     PowerControls.shutdown()
+                elif command == str(Command.MOUSE_DOWN):
+                    pyautogui.mouseDown()
+                elif command == str(Command.MOUSE_UP):
+                    pyautogui.mouseUp()
 
             else:
                 break
