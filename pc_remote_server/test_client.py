@@ -31,6 +31,10 @@ def get_command(choice):
         return "LOCK"
     elif choice == '10':
         return "SHUTDOWN"
+    elif choice == '11':
+        return "CLICK_RIGHT"
+    elif choice == '12':
+        return "CLICK_LEFT"
     return None
 
 
@@ -46,6 +50,8 @@ def print_menu():
     print("8. Sleep")
     print("9. Lock")
     print("10. Shutdown")
+    print("11. right click")
+    print("12. left click")
     print("0. Exit")
 
 
