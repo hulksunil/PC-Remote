@@ -27,18 +27,35 @@ class AppState extends ChangeNotifier {
 
   DateTime _lastMouseSend = DateTime.now();
 
+  bool _navigatingToSettings = false;
+
+  void navigateToSettingsOnce() {
+    if (_navigatingToSettings) return;
+
+    _navigatingToSettings = true;
+    Fluttertoast.showToast(
+      msg: "Device not connected to server, please reconnect",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black54,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+
+    navigatorKey.currentState
+        ?.push(
+      MaterialPageRoute(builder: (_) => SettingsPage()),
+    )
+        .then((_) {
+      _navigatingToSettings = false; // Reset after navigation finishes
+    });
+  }
+
+  bool get isConnected => udpSocket != null && serverAddress != null;
+
   void sendMouseMove(int dx, int dy) {
-    if (udpSocket == null || serverAddress == null) {
-      Fluttertoast.showToast(
-        msg: "Device not connected to server, please reconnect",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.black54,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-      navigatorKey.currentState
-          ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+    if (!isConnected) {
+      navigateToSettingsOnce();
       return;
     }
 
@@ -52,17 +69,8 @@ class AppState extends ChangeNotifier {
   }
 
   void sendScroll(int dy) {
-    if (udpSocket == null || serverAddress == null) {
-      Fluttertoast.showToast(
-        msg: "Device not connected to server, please reconnect",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.black54,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-      navigatorKey.currentState
-          ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+    if (!isConnected) {
+      navigateToSettingsOnce();
       return;
     }
 
@@ -82,16 +90,7 @@ class AppState extends ChangeNotifier {
       if (socket != null) {
         socket!.write(command);
       } else {
-        Fluttertoast.showToast(
-          msg: "Device not connected to server, please reconnect",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.black54,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-        navigatorKey.currentState
-            ?.push(MaterialPageRoute(builder: (_) => SettingsPage()));
+        navigateToSettingsOnce();
       }
     } catch (e) {
       // TODO(sunil): Check if this works properly

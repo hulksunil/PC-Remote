@@ -33,7 +33,6 @@ class Touchpad extends StatefulWidget {
   State<Touchpad> createState() => _TouchpadState();
 }
 
-// TODO(sunil): fix the issue of it starting with scroll with 1 finger on first connect unless you go to another page and come back
 // TODO(sunil): fix the issue of when you have 2 fingers on the screen and you lift one finger, the mouse moves to where the other finger was
 class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
@@ -53,7 +52,12 @@ class _TouchpadState extends State<Touchpad> {
 
   bool _suppressNextTap = false;
 
-  void _handlePointerDown(PointerDownEvent event) {
+  void _handlePointerDown(AppState appState, PointerDownEvent event) {
+    if (!appState.isConnected) {
+      appState.navigateToSettingsOnce();
+      return;
+    }
+
     _activePointers++;
     if (_activePointers == 2) {
       _isTwoFingerGesture = true;
@@ -157,7 +161,7 @@ class _TouchpadState extends State<Touchpad> {
       children: [
         Expanded(
           child: Listener(
-            onPointerDown: _handlePointerDown,
+            onPointerDown: (event) => _handlePointerDown(appState, event),
             onPointerUp: _handlePointerUp,
             child: GestureDetector(
               onPanStart: _handlePanStart,
