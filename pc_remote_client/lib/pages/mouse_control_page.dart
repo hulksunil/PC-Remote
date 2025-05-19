@@ -95,15 +95,9 @@ class _TouchpadState extends State<Touchpad> {
 
   void _handlePanStart(DragStartDetails details) {
     // When a two-finger gesture starts, reset position to avoid jump
-    if (_isTwoFingerGesture) {
-      _lastPosition = details.localPosition;
-      _accumulatedDelta = Offset.zero;
-      _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
-    } else {
-      _lastPosition = details.localPosition;
-      _accumulatedDelta = Offset.zero;
-      _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
-    }
+    _lastPosition = details.localPosition;
+    _accumulatedDelta = Offset.zero;
+    _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
