@@ -87,7 +87,7 @@ class _TouchpadState extends State<Touchpad> {
 
         if (duration < 200 && distance < 20) {
           final appState = context.read<AppState>();
-          appState.sendCommand("CLICK_RIGHT");
+          appState.sendCommand(Command.clickRight.value);
 
           _suppressNextTap = true; // Suppress left click
         }
@@ -152,12 +152,13 @@ class _TouchpadState extends State<Touchpad> {
 
   void _handlePanEnd(AppState appState, DragEndDetails details) {
     if (_isDraggingFromDoubleTap) {
-      appState.sendCommand("MOUSE_UP");
+      appState.sendCommand(Command.mouseUp.value);
       _isDraggingFromDoubleTap = false;
     }
 
     if (_isTwoFingerGesture && _accumulatedDelta.distance < 10) {
-      appState.sendCommand("CLICK_RIGHT"); // Treat it as a right-click
+      appState
+          .sendCommand(Command.clickRight.value); // Treat it as a right-click
     }
 
     _lastPosition = null;
@@ -187,7 +188,7 @@ class _TouchpadState extends State<Touchpad> {
                     (pos - _lastTapPosition!).distance < 20) {
                   // Detected double tap
                   _isDraggingFromDoubleTap = true;
-                  appState.sendCommand("MOUSE_DOWN");
+                  appState.sendCommand(Command.mouseDown.value);
                 }
 
                 _lastTapTime = now;
@@ -197,7 +198,7 @@ class _TouchpadState extends State<Touchpad> {
                 if (_isDraggingFromDoubleTap) {
                   // Do nothing yet; wait for pan end to send mouse up
                 } else if (!_isTwoFingerGesture && !_suppressNextTap) {
-                  appState.sendCommand("CLICK_LEFT");
+                  appState.sendCommand(Command.clickLeft.value);
                 }
 
                 _suppressNextTap = false;

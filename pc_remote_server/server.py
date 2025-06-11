@@ -21,6 +21,9 @@ def get_local_ip():
     return ip
 
 
+hdj
+
+
 def start_tcp_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
@@ -49,7 +52,6 @@ class Command(Enum):
     NEXT_TRACK = 'NEXT_TRACK'
     PREVIOUS_TRACK = 'PREVIOUS_TRACK'
     CURRENT_VOLUME = 'CURRENT_VOLUME'
-    TYPE = 'TYPE'
     MOVE_MOUSE = 'MOVE_MOUSE'
     MOUSE_DOWN = 'MOUSE_DOWN'
     MOUSE_UP = 'MOUSE_UP'
@@ -59,6 +61,8 @@ class Command(Enum):
     SLEEP = 'SLEEP'
     LOCK = 'LOCK'
     SHUTDOWN = 'SHUTDOWN'
+    TYPE = 'TYPE'
+    SPECIAL_KEY = 'SPECIAL_KEY'
 
     def __str__(self):
         return self.value
@@ -108,7 +112,7 @@ def handle_client(client_socket):
                 print("Client disconnected")
                 break
 
-            command = response.decode('utf-8').upper()
+            command = response.decode('utf-8')
             if command:
                 print(f"Received command: {command}")
                 if command == str(Command.VOLUME_UP):
@@ -130,6 +134,20 @@ def handle_client(client_socket):
                 elif command.startswith(str(Command.TYPE)):
                     key = command.split(':')[1]
                     pyautogui.typewrite(key)
+                elif command.startswith(str(Command.SPECIAL_KEY)):
+                    special_key = command.split(':')[1]
+                    if special_key == "BACKSPACE":
+                        pyautogui.press('backspace')
+                    elif special_key == "ENTER":
+                        pyautogui.press('enter')
+                    elif special_key == "ESCAPE":
+                        pyautogui.press('escape')
+                    elif special_key == "TAB":
+                        pyautogui.press('tab')
+                    elif special_key == "CTRL":
+                        pyautogui.keyDown('ctrl')
+                    elif special_key == "CTRL_RELEASE":
+                        pyautogui.keyUp('ctrl')
                 elif command == str(Command.CLICK_LEFT):
                     pyautogui.click()
                 elif command == str(Command.CLICK_RIGHT):

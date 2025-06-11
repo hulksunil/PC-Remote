@@ -1,72 +1,78 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:pc_remote_client/app/app_state.dart';
+import 'package:pc_remote_client/models/command.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class KeyboardControlPage extends StatefulWidget {
   const KeyboardControlPage({super.key});
+
   @override
   State<KeyboardControlPage> createState() => _KeyboardControlPageState();
 }
 
 class _KeyboardControlPageState extends State<KeyboardControlPage> {
   final TextEditingController _controller = TextEditingController();
-  String _lastText = '';
+  final FocusNode _focusNode = FocusNode();
+  late AppState appState;
+
+  String previousText = "";
 
   @override
   void initState() {
     super.initState();
 
+    // Automatically request focus when the page opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+
+    // Listen for changes and send to server
     _controller.addListener(() {
-      final appState = context.read<AppState>();
-      final currentText = _controller.text;
-
-      // Compare new and old text to get the typed character(s)
-      if (currentText.length > _lastText.length) {
-        final newChar = currentText.substring(_lastText.length);
-        appState.sendCommand("TYPE:$newChar");
-      } else if (currentText.length < _lastText.length) {
-        // User pressed backspace
-        appState.sendCommand("BACKSPACE");
-      }
-
-      _lastText = currentText;
+      sendLastKey();
     });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    appState = context.read<AppState>();
+  }
+
+  void sendLastKey() {
+    String currentText = _controller.text;
+    if (currentText.length < previousText.length) {
+      // User deleted something
+      appState.sendCommand("${Command.specialKey.value}:BACKSPACE");
+      print("Backspace sent");
+    } else if (currentText.length > previousText.length) {
+      final text = _controller.text;
+      if (text.isNotEmpty) {
+        final lastChar = text.characters.last;
+        appState.sendCommand("${Command.type.value}:$lastChar");
+        print('Send to server: $lastChar');
+      }
+    }
+    previousText = currentText;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Keyboard Input')),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Keyboard Control',
-                style: TextStyle(fontSize: 24),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  labelText: 'Type here',
-                  border: OutlineInputBorder(),
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Input is sent to the PC as you type.',
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
+        child: Opacity(
+          opacity: 0,
+          child: TextField(
+            focusNode: _focusNode,
+            controller: _controller,
+            autofocus: true,
+            showCursor: false,
+            enableSuggestions: false,
+            autocorrect: false,
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(border: InputBorder.none),
           ),
         ),
       ),

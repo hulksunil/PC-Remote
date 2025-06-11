@@ -8,9 +8,13 @@ enum Command {
   previousTrack,
   clickLeft,
   clickRight,
+  mouseUp,
+  mouseDown,
   sleep,
   shutdown,
   lock,
+  type,
+  specialKey,
 }
 
 extension CommandExtension on Command {
@@ -36,6 +40,10 @@ extension CommandExtension on Command {
         return "CLICK_LEFT";
       case Command.clickRight:
         return "CLICK_RIGHT";
+      case Command.mouseUp:
+        return "MOUSE_UP";
+      case Command.mouseDown:
+        return "MOUSE_DOWN";
 
       case Command.sleep:
         return "SLEEP";
@@ -43,6 +51,11 @@ extension CommandExtension on Command {
         return "SHUTDOWN";
       case Command.lock:
         return "LOCK";
+
+      case Command.type:
+        return "TYPE";
+      case Command.specialKey:
+        return "SPECIAL_KEY";
     }
   }
 }
