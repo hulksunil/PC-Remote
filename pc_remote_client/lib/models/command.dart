@@ -13,8 +13,9 @@ enum Command {
   sleep,
   shutdown,
   lock,
+  showBlackScreen,
   type,
-  specialKey,
+  specialKey
 }
 
 extension CommandExtension on Command {
@@ -51,6 +52,8 @@ extension CommandExtension on Command {
         return "SHUTDOWN";
       case Command.lock:
         return "LOCK";
+      case Command.showBlackScreen:
+        return "SHOW_BLACK_SCREEN";
 
       case Command.type:
         return "TYPE";

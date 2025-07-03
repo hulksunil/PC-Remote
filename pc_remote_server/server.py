@@ -1,11 +1,17 @@
+import signal
+import sys
+from tray_icon import start_tray
 import socket
 import pyautogui
 from enum import Enum
 from media_controls import MediaControls
 from power_controls import PowerControls
+from black_screen import close_black_screen, open_black_screen
+
 import threading
 
 pyautogui.FAILSAFE = False  # Disable fail-safe to prevent mouse movement issues
+current_client_socket = None
 
 
 def get_local_ip():
@@ -19,9 +25,6 @@ def get_local_ip():
     finally:
         s.close()
     return ip
-
-
-hdj
 
 
 def start_tcp_server():
@@ -61,6 +64,8 @@ class Command(Enum):
     SLEEP = 'SLEEP'
     LOCK = 'LOCK'
     SHUTDOWN = 'SHUTDOWN'
+    SHOW_BLACK_SCREEN = 'SHOW_BLACK_SCREEN'
+    CLOSE_BLACK_SCREEN = 'CLOSE_BLACK_SCREEN'
     TYPE = 'TYPE'
     SPECIAL_KEY = 'SPECIAL_KEY'
 
@@ -101,9 +106,11 @@ def start_udp_mouse_server():
 def handle_client(client_socket):
     """Handles the client connection and receives data."""
     # volume = setup_volume()  # Initialize volume control
+    global current_client_socket
+    current_client_socket = client_socket
 
-    while True:
-        try:
+    try:
+        while True:
             print("Waiting to receive commands...")
             # Receive the command from the client
             response = client_socket.recv(1024)
@@ -137,7 +144,8 @@ def handle_client(client_socket):
                 elif command.startswith(str(Command.SPECIAL_KEY)):
                     special_key = command.split(':')[1]
                     if special_key == "BACKSPACE":
-                        pyautogui.press('backspace')
+                        numPresses = command.split(':')[2]
+                        pyautogui.press('backspace', presses=int(numPresses))
                     elif special_key == "ENTER":
                         pyautogui.press('enter')
                     elif special_key == "ESCAPE":
@@ -158,18 +166,29 @@ def handle_client(client_socket):
                     PowerControls.lock()
                 elif command == str(Command.SHUTDOWN):
                     PowerControls.shutdown()
+                elif command == str(Command.SHOW_BLACK_SCREEN):
+                    threading.Thread(target=open_black_screen,
+                                     daemon=True).start()
+                elif command == str(Command.CLOSE_BLACK_SCREEN):
+
+                    close_black_screen()
                 elif command == str(Command.MOUSE_DOWN):
                     pyautogui.mouseDown()
                 elif command == str(Command.MOUSE_UP):
                     pyautogui.mouseUp()
 
-            else:
-                break
-        except Exception as e:
-            print(f"Error: {e}")
-            break
-
-    client_socket.close()
+                else:
+                    break
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        print("Closing client socket")
+        try:
+            client_socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        client_socket.close()
+        current_client_socket = None
 
 
 def start_server():
@@ -182,5 +201,23 @@ def start_server():
     start_tcp_server()
 
 
+def graceful_exit(*args):
+    global current_client_socket
+    print("Exiting...")
+
+    if current_client_socket:
+        try:
+            current_client_socket.shutdown(socket.SHUT_RDWR)
+            current_client_socket.close()
+            print("Client socket closed.")
+        except Exception as e:
+            print(f"Error closing client socket: {e}")
+
+    close_black_screen()
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, graceful_exit)
+    signal.signal(signal.SIGTERM, graceful_exit)
+    start_tray(graceful_exit)
     start_server()
