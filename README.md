@@ -17,3 +17,4 @@ Done in flutter (first time)
 
 
 # Server
+Done in Python (soon to switch to Golang for more efficient and faster processing of data)

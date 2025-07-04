@@ -167,6 +167,7 @@ def handle_client(client_socket):
                 elif command == str(Command.SHUTDOWN):
                     PowerControls.shutdown()
                 elif command == str(Command.SHOW_BLACK_SCREEN):
+                    print("Opening black screen")
                     threading.Thread(target=open_black_screen,
                                      daemon=True).start()
                 elif command == str(Command.CLOSE_BLACK_SCREEN):
@@ -176,8 +177,8 @@ def handle_client(client_socket):
                     pyautogui.mouseDown()
                 elif command == str(Command.MOUSE_UP):
                     pyautogui.mouseUp()
-
                 else:
+                    print(f"Unknown command: {command}")
                     break
     except Exception as e:
         print(f"Error: {e}")
