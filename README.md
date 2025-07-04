@@ -6,10 +6,8 @@ Application done with sockets using TCP and UDP for low-latency and instant feed
 ## Quick Start
 1. cd into client/
 2. run `flutter pub get`
-
-
-cd into server/
-run `py server.py`
+3. cd into server/
+4. run `py server.py`
 
 ## To get single file server  
 `pyinstaller --noconsole --onefile server.py --name pc_remote_server`  
