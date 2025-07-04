@@ -1,4 +1,4 @@
-name: pc_remote_client
+name: client
 description: A project to control your PC from your phone.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

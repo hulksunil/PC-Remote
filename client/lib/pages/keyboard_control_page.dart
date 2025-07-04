@@ -1,5 +1,5 @@
-import 'package:pc_remote_client/app/app_state.dart';
-import 'package:pc_remote_client/models/command.dart';
+import 'package:client/app/app_state.dart';
+import 'package:client/models/command.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

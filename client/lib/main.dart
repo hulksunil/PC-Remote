@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pc_remote_client/app/app_state.dart';
-import 'package:pc_remote_client/pages/mouse_control_page.dart';
-import 'package:pc_remote_client/pages/keyboard_control_page.dart';
-import 'package:pc_remote_client/pages/media_control_page.dart';
-import 'package:pc_remote_client/pages/settings_page.dart';
-import 'package:pc_remote_client/services/navigation_service.dart';
-import 'package:pc_remote_client/pages/power_control_page.dart';
+import 'package:client/app/app_state.dart';
+import 'package:client/pages/mouse_control_page.dart';
+import 'package:client/pages/keyboard_control_page.dart';
+import 'package:client/pages/media_control_page.dart';
+import 'package:client/pages/settings_page.dart';
+import 'package:client/services/navigation_service.dart';
+import 'package:client/pages/power_control_page.dart';
 
 // NOTE: dart.io is used for socket communication only for mobile
 // NOTE: For web, you would typically use WebSockets or HTTP requests since web apps are not allowed to use sockets directly due to security restrictions.
