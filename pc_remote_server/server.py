@@ -254,5 +254,6 @@ def graceful_exit(*args):
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, graceful_exit)
     signal.signal(signal.SIGTERM, graceful_exit)
-    start_tray(graceful_exit)
+    ip = get_local_ip()
+    start_tray(graceful_exit, ip)
     start_server()

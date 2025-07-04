@@ -17,7 +17,8 @@ def create_icon():
     return img
 
 
-def start_tray(on_exit_callback):
+def start_tray(on_exit_callback, ip_address):
+    """Starts the system tray icon with a menu for showing a black screen and exiting."""
     global _exit_callback
 
     def on_show_black():
@@ -28,6 +29,7 @@ def start_tray(on_exit_callback):
         if on_exit_callback:
             threading.Thread(target=on_exit_callback).start()
 
+    tooltip = f"PC Remote Server\nIP: {ip_address}"
     menu = (item("Show Black Screen", on_show_black), item("Exit", on_exit))
-    icon = pystray.Icon("PCRemote", create_icon(), "PC Remote Server", menu)
+    icon = pystray.Icon("PCRemote", create_icon(), tooltip, menu)
     threading.Thread(target=icon.run, daemon=True).start()
