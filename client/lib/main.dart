@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         builder: (context, appState, _) {
           return MaterialApp(
             navigatorKey: navigatorKey,
-            title: 'PC Remote Client',
+            title: 'PC Remote',
             theme: ThemeData(
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(seedColor: appState.themeColor),
@@ -46,7 +46,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('PC Remote Control'),
+      title: const Text('PC Remote'),
       actions: [
         IconButton(
           icon: const Icon(Icons.settings),
