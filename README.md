@@ -12,9 +12,15 @@ cd into server/
 run `py server.py`
 
 ## To get single file server  
-`pyinstaller --noconsole --onefile server.py`  
+`pyinstaller --noconsole --onefile server.py --name pc_remote_server`  
 
 run dist/server.exe
+
+## To get official app (non-debug)
+`flutter build apk --release`
+
+
+Then go to build/app/outputs/apk/release and take the release apk
 
 # Client
 This is the phone application
