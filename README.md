@@ -1,7 +1,7 @@
-# pc-remote-server-client
+# PC Remote
 Control your PC's mouse and volume using your mobile device
 
-Application done with sockets using TCP for low-latency and instant feedback
+Application done with sockets using TCP and UDP for low-latency and instant feedback
 
 
 ## To get single file server  
@@ -17,8 +17,7 @@ Done in flutter (first time)
 
 
 # Server
-Done in Python (soon to switch to Golang for more efficient and faster processing of data)
+This is the PC application
 
-This is the pc application
+Done in Python with tkinter (high potential to switch to Golang for more efficient and faster processing of data)
 
-done in python tkinter
