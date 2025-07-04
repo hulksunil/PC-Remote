@@ -12,6 +12,8 @@ import threading
 
 pyautogui.FAILSAFE = False  # Disable fail-safe to prevent mouse movement issues
 current_client_socket = None
+server_socket = None
+shutdown_event = threading.Event()
 
 
 def get_local_ip():
@@ -28,17 +30,25 @@ def get_local_ip():
 
 
 def start_tcp_server():
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((HOST, PORT))
-    server.listen()  # Only accept 1 client
+    global server_socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.settimeout(1.0)  # timeout every 1 second
+    server_socket.bind((HOST, PORT))
+    server_socket.listen()
     print(f"TCP Server listening on {get_local_ip()}:{PORT}")
 
     # Accept a connection from a client (this will wait until a client connects)
-    while True:
-        print("Waiting for a new client...")
-        client_socket, addr = server.accept()
-        print(f"TCP Connection from {addr}")
-        handle_client(client_socket)
+    while not shutdown_event.is_set():
+        try:
+            print("Waiting for a new client...")
+            client_socket, addr = server_socket.accept()
+            print(f"TCP Connection from {addr}")
+            handle_client(client_socket)
+        except socket.timeout:
+            continue
+        except OSError:
+            break  # Server socket was closed
 
 
 # Listen on all interfaces (lets us use either 192.168.1.x or localhost for client)
@@ -75,11 +85,19 @@ class Command(Enum):
 
 def start_udp_mouse_server():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Set a timeout for the UDP socket to avoid blocking
+    udp_socket.settimeout(1.0)
     udp_socket.bind((HOST, 5556))
     print("UDP Mouse server listening on port 5556")
 
-    while True:
-        data, addr = udp_socket.recvfrom(1024)
+    while not shutdown_event.is_set():
+        try:
+            data, addr = udp_socket.recvfrom(1024)
+        except socket.timeout:
+            continue
+        except OSError:
+            print("UDP server socket closed")
+            break
         command = data.decode().strip()
         if command.startswith("MOVE_MOUSE"):
             try:
@@ -108,80 +126,86 @@ def handle_client(client_socket):
     # volume = setup_volume()  # Initialize volume control
     global current_client_socket
     current_client_socket = client_socket
+    # Set a timeout for the socket so we can periodically check for shutdown
+    client_socket.settimeout(1.0)
 
     try:
-        while True:
-            print("Waiting to receive commands...")
-            # Receive the command from the client
-            response = client_socket.recv(1024)
+        while not shutdown_event.is_set():
+            try:
+                print("Waiting to receive commands...")
+                # Receive the command from the client
+                response = client_socket.recv(1024)
 
-            if not response:
-                print("Client disconnected")
-                break
-
-            command = response.decode('utf-8')
-            if command:
-                print(f"Received command: {command}")
-                if command == str(Command.VOLUME_UP):
-                    MediaControls.volume_up()
-                elif command == str(Command.VOLUME_DOWN):
-                    MediaControls.volume_down()
-                elif command == str(Command.VOLUME_MUTE):
-                    MediaControls.volume_mute()
-                elif command == str(Command.PLAY_PAUSE):
-                    MediaControls.send_media_play_pause()
-                elif command == str(Command.NEXT_TRACK):
-                    MediaControls.send_media_next_track()
-                elif command == str(Command.PREVIOUS_TRACK):
-                    MediaControls.send_media_previous_track()
-                elif command == str(Command.CURRENT_VOLUME):
-                    volume_level = MediaControls.get_volume()  # Get current volume level
-                    client_socket.send(f"{volume_level}".encode())
-
-                elif command.startswith(str(Command.TYPE)):
-                    key = command.split(':')[1]
-                    pyautogui.typewrite(key)
-                elif command.startswith(str(Command.SPECIAL_KEY)):
-                    special_key = command.split(':')[1]
-                    if special_key == "BACKSPACE":
-                        numPresses = command.split(':')[2]
-                        pyautogui.press('backspace', presses=int(numPresses))
-                    elif special_key == "ENTER":
-                        pyautogui.press('enter')
-                    elif special_key == "ESCAPE":
-                        pyautogui.press('escape')
-                    elif special_key == "TAB":
-                        pyautogui.press('tab')
-                    elif special_key == "CTRL":
-                        pyautogui.keyDown('ctrl')
-                    elif special_key == "CTRL_RELEASE":
-                        pyautogui.keyUp('ctrl')
-                elif command == str(Command.CLICK_LEFT):
-                    pyautogui.click()
-                elif command == str(Command.CLICK_RIGHT):
-                    pyautogui.click(button='right')
-                elif command == str(Command.SLEEP):
-                    PowerControls.sleep()
-                elif command == str(Command.LOCK):
-                    PowerControls.lock()
-                elif command == str(Command.SHUTDOWN):
-                    PowerControls.shutdown()
-                elif command == str(Command.SHOW_BLACK_SCREEN):
-                    print("Opening black screen")
-                    threading.Thread(target=open_black_screen,
-                                     daemon=True).start()
-                elif command == str(Command.CLOSE_BLACK_SCREEN):
-
-                    close_black_screen()
-                elif command == str(Command.MOUSE_DOWN):
-                    pyautogui.mouseDown()
-                elif command == str(Command.MOUSE_UP):
-                    pyautogui.mouseUp()
-                else:
-                    print(f"Unknown command: {command}")
+                if not response:
+                    print("Client disconnected")
                     break
-    except Exception as e:
-        print(f"Error: {e}")
+
+                command = response.decode('utf-8')
+                if command:
+                    print(f"Received command: {command}")
+                    if command == str(Command.VOLUME_UP):
+                        MediaControls.volume_up()
+                    elif command == str(Command.VOLUME_DOWN):
+                        MediaControls.volume_down()
+                    elif command == str(Command.VOLUME_MUTE):
+                        MediaControls.volume_mute()
+                    elif command == str(Command.PLAY_PAUSE):
+                        MediaControls.send_media_play_pause()
+                    elif command == str(Command.NEXT_TRACK):
+                        MediaControls.send_media_next_track()
+                    elif command == str(Command.PREVIOUS_TRACK):
+                        MediaControls.send_media_previous_track()
+                    elif command == str(Command.CURRENT_VOLUME):
+                        volume_level = MediaControls.get_volume()  # Get current volume level
+                        client_socket.send(f"{volume_level}".encode())
+
+                    elif command.startswith(str(Command.TYPE)):
+                        key = command.split(':')[1]
+                        pyautogui.typewrite(key)
+                    elif command.startswith(str(Command.SPECIAL_KEY)):
+                        special_key = command.split(':')[1]
+                        if special_key == "BACKSPACE":
+                            numPresses = command.split(':')[2]
+                            pyautogui.press(
+                                'backspace', presses=int(numPresses))
+                        elif special_key == "ENTER":
+                            pyautogui.press('enter')
+                        elif special_key == "ESCAPE":
+                            pyautogui.press('escape')
+                        elif special_key == "TAB":
+                            pyautogui.press('tab')
+                        elif special_key == "CTRL":
+                            pyautogui.keyDown('ctrl')
+                        elif special_key == "CTRL_RELEASE":
+                            pyautogui.keyUp('ctrl')
+                    elif command == str(Command.CLICK_LEFT):
+                        pyautogui.click()
+                    elif command == str(Command.CLICK_RIGHT):
+                        pyautogui.click(button='right')
+                    elif command == str(Command.SLEEP):
+                        PowerControls.sleep()
+                    elif command == str(Command.LOCK):
+                        PowerControls.lock()
+                    elif command == str(Command.SHUTDOWN):
+                        PowerControls.shutdown()
+                    elif command == str(Command.SHOW_BLACK_SCREEN):
+                        print("Opening black screen")
+                        threading.Thread(target=open_black_screen,
+                                         daemon=True).start()
+                    elif command == str(Command.CLOSE_BLACK_SCREEN):
+
+                        close_black_screen()
+                    elif command == str(Command.MOUSE_DOWN):
+                        pyautogui.mouseDown()
+                    elif command == str(Command.MOUSE_UP):
+                        pyautogui.mouseUp()
+                    else:
+                        print(f"Unknown command: {command}")
+                        break
+            except socket.timeout:
+                continue
+            except Exception as e:
+                print(f"Error: {e}")
     finally:
         print("Closing client socket")
         try:
@@ -203,8 +227,10 @@ def start_server():
 
 
 def graceful_exit(*args):
-    global current_client_socket
+    global current_client_socket, server_socket
     print("Exiting...")
+
+    shutdown_event.set()  # Signal threads to stop
 
     if current_client_socket:
         try:
@@ -214,7 +240,15 @@ def graceful_exit(*args):
         except Exception as e:
             print(f"Error closing client socket: {e}")
 
+    if server_socket:
+        try:
+            server_socket.close()
+            print("Server socket closed.")
+        except Exception as e:
+            print(f"Error closing server socket: {e}")
+
     close_black_screen()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

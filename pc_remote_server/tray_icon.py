@@ -25,8 +25,8 @@ def start_tray(on_exit_callback):
 
     def on_exit(icon, item):
         icon.stop()
-        if _exit_callback:
-            threading.Thread(target=_exit_callback).start()
+        if on_exit_callback:
+            threading.Thread(target=on_exit_callback).start()
 
     menu = (item("Show Black Screen", on_show_black), item("Exit", on_exit))
     icon = pystray.Icon("PCRemote", create_icon(), "PC Remote Server", menu)
