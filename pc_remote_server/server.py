@@ -38,11 +38,16 @@ def start_tcp_server():
     server_socket.listen()
     print(f"TCP Server listening on {get_local_ip()}:{PORT}")
 
+    waiting_printed = False
+
     # Accept a connection from a client (this will wait until a client connects)
     while not shutdown_event.is_set():
         try:
-            print("Waiting for a new client...")
+            if not waiting_printed:
+                print("Waiting for a new client...")
+                waiting_printed = True
             client_socket, addr = server_socket.accept()
+            waiting_printed = False  # Reset waiting printed flag for next client connection
             print(f"TCP Connection from {addr}")
             handle_client(client_socket)
         except socket.timeout:
@@ -129,12 +134,17 @@ def handle_client(client_socket):
     # Set a timeout for the socket so we can periodically check for shutdown
     client_socket.settimeout(1.0)
 
+    waiting_printed = False
+
     try:
         while not shutdown_event.is_set():
             try:
-                print("Waiting to receive commands...")
+                if not waiting_printed:
+                    print("Waiting to receive commands...")
+                    waiting_printed = True
                 # Receive the command from the client
                 response = client_socket.recv(1024)
+                waiting_printed = False  # Reset waiting printed flag after receiving data
 
                 if not response:
                     print("Client disconnected")
