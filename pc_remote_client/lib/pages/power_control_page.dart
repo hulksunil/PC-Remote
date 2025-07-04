@@ -20,6 +20,9 @@ class PowerSettingsPage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening black window on 2nd monitor')),
     );
+
+    // Navigate application to the mouse control page
+    appState.setSelectedIndex(0); // Go to MouseControlPage
   }
 
   @override

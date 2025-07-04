@@ -25,6 +25,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _selectedIndex = 0;
+
+  int get selectedIndex => _selectedIndex;
+
+  void setSelectedIndex(int index) {
+    _selectedIndex = index;
+    notifyListeners();
+  }
+
   DateTime _lastMouseSend = DateTime.now();
 
   bool _navigatingToSettings = false;
