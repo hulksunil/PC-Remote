@@ -18,3 +18,7 @@ Done in flutter (first time)
 
 # Server
 Done in Python (soon to switch to Golang for more efficient and faster processing of data)
+
+This is the pc application
+
+done in python tkinter
