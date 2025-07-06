@@ -9,6 +9,8 @@ from power_controls import PowerControls
 from black_screen import close_black_screen, open_black_screen
 
 import threading
+from logger import logger
+
 
 pyautogui.FAILSAFE = False  # Disable fail-safe to prevent mouse movement issues
 current_client_socket = None
@@ -36,7 +38,7 @@ def start_tcp_server():
     server_socket.settimeout(1.0)  # timeout every 1 second
     server_socket.bind((HOST, PORT))
     server_socket.listen()
-    print(f"TCP Server listening on {get_local_ip()}:{PORT}")
+    logger.info(f"TCP Server listening on {get_local_ip()}:{PORT}")
 
     waiting_printed = False
 
@@ -44,11 +46,11 @@ def start_tcp_server():
     while not shutdown_event.is_set():
         try:
             if not waiting_printed:
-                print("Waiting for a new client...")
+                logger.info("Waiting for a new client...")
                 waiting_printed = True
             client_socket, addr = server_socket.accept()
             waiting_printed = False  # Reset waiting printed flag for next client connection
-            print(f"TCP Connection from {addr}")
+            logger.info(f"TCP Connection from {addr}")
             handle_client(client_socket)
         except socket.timeout:
             continue
@@ -92,8 +94,12 @@ def start_udp_mouse_server():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Set a timeout for the UDP socket to avoid blocking
     udp_socket.settimeout(1.0)
-    udp_socket.bind((HOST, 5556))
-    print("UDP Mouse server listening on port 5556")
+    try:
+        udp_socket.bind((HOST, 5556))
+    except OSError as e:
+        logger.error(f"Error binding UDP socket: {e}")
+        shutdown_event.set()
+    logger.info("UDP Mouse server listening on port 5556")
 
     while not shutdown_event.is_set():
         try:
@@ -101,7 +107,7 @@ def start_udp_mouse_server():
         except socket.timeout:
             continue
         except OSError:
-            print("UDP server socket closed")
+            logger.error("UDP server socket closed")
             break
         command = data.decode().strip()
         if command.startswith("MOVE_MOUSE"):
@@ -114,7 +120,7 @@ def start_udp_mouse_server():
                             ':')[1].split(','))
                         pyautogui.moveRel(x, y)
             except Exception as e:
-                print(f"Error handling UDP mouse move: {e}")
+                logger.error(f"Error handling UDP mouse move: {e}")
 
         elif command.startswith(str(Command.SCROLL)):
             individual_commands = command.split(';')
@@ -123,7 +129,7 @@ def start_udp_mouse_server():
                 dy = int(dy.strip(";"))
                 if abs(dy) > 1:
                     pyautogui.scroll(dy)
-                    print(f"Scrolling: dy={dy}")
+                    logger.info(f"Scrolling: dy={dy}")
 
 
 def handle_client(client_socket):
@@ -140,19 +146,19 @@ def handle_client(client_socket):
         while not shutdown_event.is_set():
             try:
                 if not waiting_printed:
-                    print("Waiting to receive commands...")
+                    logger.info("Waiting to receive commands...")
                     waiting_printed = True
                 # Receive the command from the client
                 response = client_socket.recv(1024)
                 waiting_printed = False  # Reset waiting printed flag after receiving data
 
                 if not response:
-                    print("Client disconnected")
+                    logger.info("Client disconnected")
                     break
 
                 command = response.decode('utf-8')
                 if command:
-                    print(f"Received command: {command}")
+                    logger.info(f"Received command: {command}")
                     if command == str(Command.VOLUME_UP):
                         MediaControls.volume_up()
                     elif command == str(Command.VOLUME_DOWN):
@@ -199,7 +205,7 @@ def handle_client(client_socket):
                     elif command == str(Command.SHUTDOWN):
                         PowerControls.shutdown()
                     elif command == str(Command.SHOW_BLACK_SCREEN):
-                        print("Opening black screen")
+                        logger.info("Opening black screen")
                         threading.Thread(target=open_black_screen,
                                          daemon=True).start()
                     elif command == str(Command.CLOSE_BLACK_SCREEN):
@@ -210,14 +216,14 @@ def handle_client(client_socket):
                     elif command == str(Command.MOUSE_UP):
                         pyautogui.mouseUp()
                     else:
-                        print(f"Unknown command: {command}")
+                        logger.info(f"Unknown command: {command}")
                         break
             except socket.timeout:
                 continue
             except Exception as e:
-                print(f"Error: {e}")
+                logger.error(f"Error: {e}")
     finally:
-        print("Closing client socket")
+        logger.info("Closing client socket")
         try:
             client_socket.shutdown(socket.SHUT_RDWR)
         except:
@@ -238,7 +244,7 @@ def start_server():
 
 def graceful_exit(*args):
     global current_client_socket, server_socket
-    print("Exiting...")
+    logger.info("Exiting...")
 
     shutdown_event.set()  # Signal threads to stop
 
@@ -246,16 +252,16 @@ def graceful_exit(*args):
         try:
             current_client_socket.shutdown(socket.SHUT_RDWR)
             current_client_socket.close()
-            print("Client socket closed.")
+            logger.info("Client socket closed.")
         except Exception as e:
-            print(f"Error closing client socket: {e}")
+            logger.error(f"Error closing client socket: {e}")
 
     if server_socket:
         try:
             server_socket.close()
-            print("Server socket closed.")
+            logger.info("Server socket closed.")
         except Exception as e:
-            print(f"Error closing server socket: {e}")
+            logger.error(f"Error closing server socket: {e}")
 
     close_black_screen()
     sys.exit(0)

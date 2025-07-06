@@ -2,6 +2,7 @@ import ctypes
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
+from logger import logger
 
 # Define the constants for media keys
 MEDIA_PLAY_PAUSE = 0xB3
@@ -17,7 +18,7 @@ class MediaControls:
         ctypes.windll.user32.keybd_event(MEDIA_PLAY_PAUSE, 0, 0, 0)  # Key down
         ctypes.windll.user32.keybd_event(
             MEDIA_PLAY_PAUSE, 0, KEYEVENTF_KEYUP, 0)  # Key up
-        print("Play/Pause key sent.")
+        logger.debug("Play/Pause key sent.")
 
     @staticmethod
     def send_media_next_track():
@@ -25,7 +26,7 @@ class MediaControls:
         ctypes.windll.user32.keybd_event(MEDIA_NEXT_TRACK, 0, 0, 0)  # Key down
         ctypes.windll.user32.keybd_event(
             MEDIA_NEXT_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
-        print("Next Track key sent.")
+        logger.debug("Next Track key sent.")
 
     @staticmethod
     def send_media_previous_track():
@@ -34,7 +35,7 @@ class MediaControls:
             MEDIA_PREVIOUS_TRACK, 0, 0, 0)  # Key down
         ctypes.windll.user32.keybd_event(
             MEDIA_PREVIOUS_TRACK, 0, KEYEVENTF_KEYUP, 0)  # Key up
-        print("Previous Track key sent.")
+        logger.debug("Previous Track key sent.")
 
     @staticmethod
     def volume_up():
@@ -68,7 +69,7 @@ class MediaControls:
         volume = cast(interface, POINTER(IAudioEndpointVolume))
         # Returns value between 0.0 and 1.0
         current = volume.GetMasterVolumeLevelScalar()
-        print(f"Current volume level: {current}")
+        logger.info(f"Current volume level: {current}")
         return round(current * 100)
 
 

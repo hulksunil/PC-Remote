@@ -1,4 +1,5 @@
 import subprocess
+from logger import logger
 
 
 class PowerControls:
@@ -7,9 +8,9 @@ class PowerControls:
         try:
             subprocess.run(
                 "rundll32.exe powrprof.dll,SetSuspendState 0,1,0", shell=True, check=True)
-            print("Sleep command executed.")
+            logger.info("Sleep command executed.")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to put PC to sleep: {e}")
+            logger.error(f"Failed to put PC to sleep: {e}")
 
     @staticmethod
     def shutdown():
@@ -18,15 +19,15 @@ class PowerControls:
         return
         try:
             subprocess.run("shutdown /s /t 0", shell=True, check=True)
-            print("Shutdown command executed.")
+            logger.info("Shutdown command executed.")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to shutdown PC: {e}")
+            logger.error(f"Failed to shutdown PC: {e}")
 
     @staticmethod
     def lock():
         try:
             subprocess.run(
                 "rundll32.exe user32.dll,LockWorkStation", shell=True, check=True)
-            print("Lock command executed.")
+            logger.info("Lock command executed.")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to lock PC: {e}")
+            logger.error(f"Failed to lock PC: {e}")

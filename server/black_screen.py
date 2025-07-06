@@ -1,5 +1,6 @@
 import tkinter as tk
 from screeninfo import get_monitors
+from logger import logger
 
 _root = None
 _black_window = None
@@ -13,7 +14,7 @@ def open_black_screen():
 
     monitors = get_monitors()
     if len(monitors) < 2:
-        print("Second monitor not found.")
+        logger.error("Second monitor not found.")
         return
 
     second = monitors[1]
