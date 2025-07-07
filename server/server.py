@@ -220,6 +220,13 @@ def handle_client(client_socket):
                         break
             except socket.timeout:
                 continue
+            except (ConnectionResetError, BrokenPipeError, OSError) as e:
+                if hasattr(e, 'errno') and e.errno == 10054:
+                    logger.info(
+                        "Client connection was forcibly closed by remote host")
+                else:
+                    logger.error(f"Socket error: {e}")
+                break
             except Exception as e:
                 logger.error(f"Error: {e}")
     finally:
@@ -227,6 +234,7 @@ def handle_client(client_socket):
         try:
             client_socket.shutdown(socket.SHUT_RDWR)
         except:
+            logger.error("Error shutting down client socket")
             pass
         client_socket.close()
         current_client_socket = None
