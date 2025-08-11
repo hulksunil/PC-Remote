@@ -1,0 +1,6 @@
+Pillow
+pystray
+screeninfo
+pyautogui
+pycaw
+comtypes

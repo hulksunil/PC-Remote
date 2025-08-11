@@ -9,6 +9,11 @@ Application done with sockets using TCP and UDP for low-latency and instant feed
 3. cd into server/
 4. run `py server.py`
 
+### If ios build not working, try this
+flutter clean  
+flutter pub get 
+flutter build ios 
+
 ## To get single file server  
 `pyinstaller --noconsole --onefile server.py --name pc_remote_server`  
 

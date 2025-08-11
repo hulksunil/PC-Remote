@@ -5,6 +5,8 @@ from logger import logger
 _root = None
 _black_window = None
 
+# TODO(sunil): Fix black screen opening with macos
+
 
 def open_black_screen():
     """Open a black screen on the second monitor."""
@@ -13,10 +15,12 @@ def open_black_screen():
         return  # Already open
 
     monitors = get_monitors()
+    logger.info(f"Detected monitors: {monitors}")
     if len(monitors) < 2:
         logger.error("Second monitor not found.")
         return
 
+    logger.debug(f"Second monitor found")
     second = monitors[1]
 
     # Create root but keep it hidden

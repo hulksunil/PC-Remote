@@ -1,0 +1,9 @@
+2025-08-08 01:02:19,257 [INFO] UDP Mouse server listening on port 5556
+2025-08-08 01:02:19,257 [INFO] TCP Server listening on 192.168.2.27:5555
+2025-08-08 01:02:19,257 [INFO] Waiting for a new client...
+2025-08-08 01:04:56,235 [INFO] UDP Mouse server listening on port 5556
+2025-08-08 01:04:56,236 [INFO] TCP Server listening on 192.168.2.27:5555
+2025-08-08 01:04:56,236 [INFO] Waiting for a new client...
+2025-08-08 01:08:21,465 [INFO] UDP Mouse server listening on port 5556
+2025-08-08 01:08:21,465 [INFO] TCP Server listening on 192.168.2.27:5555
+2025-08-08 01:08:21,465 [INFO] Waiting for a new client...
