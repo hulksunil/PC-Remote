@@ -25,6 +25,10 @@ run dist/server.exe
 
 Then go to build/app/outputs/apk/release and take the release apk
 
+## To make ios build work when not plugged into usb debugging
+flutter run --profile
+ 
+
 # Client
 This is the phone application
 
@@ -37,3 +41,13 @@ This is the PC application
 
 Done in Python with tkinter (high potential to switch to Golang for more efficient and faster processing of data)
 
+
+
+## WARNING
+You may need to debug wifi settings a couple times. The code is correct trust me 😊  
+I've had my devices connected using wifi reserved ip address to help it work. If all else fails, try it out using a hotspot from phone to pc.  
+Also, you might need o take off wifi-6 or just go to a really strong wifi connection point to ensure connection.
+
+MY MAIN ISSUE WAS POOR WIFI CONNECTIVITY (It really makes nothing work). It made my phone and my computer keep switching between wifi hidden networks (like 2.4GHz or something)
+
+If device not showing in xcode or flutter, try running flutter devices. Try removing trust from computer using your phone and then trusting it again. Ensure developer options are enabled.

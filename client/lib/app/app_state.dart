@@ -159,6 +159,7 @@ class AppState extends ChangeNotifier {
   Future<void> connectToServer(String ip) async {
     try {
       serverAddress = InternetAddress(ip);
+      print("Attempting connection to server at $ip with port $port...");
 
       // TCP
       socket = await Socket.connect(serverAddress!, port);

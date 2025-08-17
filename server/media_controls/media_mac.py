@@ -24,12 +24,14 @@ class MediaControls:
             ["osascript", "-e", 'tell application "System Events" to key code 123 using {command down}'])
         logger.debug("Previous Track key sent (macOS).")
 
+    # TODO(Sunil): Fix if they hold volume up button
     @staticmethod
     def volume_up():
         subprocess.run(
             ["osascript", "-e", 'set volume output volume ((output volume of (get volume settings)) + 6) --100%'])
         logger.debug("Volume up (macOS).")
 
+    # TODO(Sunil): Fix if they hold volume down button
     @staticmethod
     def volume_down():
         subprocess.run(

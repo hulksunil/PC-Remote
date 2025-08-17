@@ -279,5 +279,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, graceful_exit)
     signal.signal(signal.SIGTERM, graceful_exit)
     ip = get_local_ip()
-    start_tray(graceful_exit, ip)
+
+    # NOTE: This gui thing blocks the use of ctrl/control + c SIGINT signal
+    # start_tray(graceful_exit, ip)
     start_server()
