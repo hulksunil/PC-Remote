@@ -1,7 +1,7 @@
 import socket
 import time
 
-HOST = '192.168.2.12'  # Change if needed
+HOST = '192.168.2.40'  # Change if needed
 PORT = 5555
 
 

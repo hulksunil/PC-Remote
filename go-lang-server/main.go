@@ -150,6 +150,13 @@ func startTCPServer() {
 				log.Printf("Accept error: %v", err)
 				continue
 			}
+
+			if currentClient != nil {
+				log.Printf("Rejected client: %s (already connected)\n", conn.RemoteAddr())
+				conn.Close()
+				continue
+			}
+
 			currentClient = conn
 			log.Printf("Client connected: %s\n", conn.RemoteAddr())
 			go handleClient(conn)
