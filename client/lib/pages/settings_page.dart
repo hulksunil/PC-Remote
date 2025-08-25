@@ -20,7 +20,7 @@ class _SettingsPageState extends State<SettingsPage> {
     var appState = context.watch<AppState>();
 
     _ipController.text =
-        "192.168.2.12"; // Default IP for testing (REMOTE LATER) ------------------------
+        "192.168.2.18"; // Default IP for testing (REMOTE LATER) ------------------------
 
     return Scaffold(
       appBar: AppBar(title: const Text('SETTINGS')),

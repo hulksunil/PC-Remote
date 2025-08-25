@@ -17,6 +17,8 @@ current_client_socket = None
 server_socket = None
 shutdown_event = threading.Event()
 
+# BIG TODO(sunil): Make this a lot faster (switch to golang server) because it runs fine on my desktop pc because it's speced out but not that great on my macbook since its a bit slower
+
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

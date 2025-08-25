@@ -19,15 +19,18 @@ flutter build ios
 
 run dist/server.exe
 
-## To get official app (non-debug)
+## To get release app(android apk)
 `flutter build apk --release`
 
-
 Then go to build/app/outputs/apk/release and take the release apk
+
+## To get release app (ios)
+flutter run --release
 
 ## To make ios build work when not plugged into usb debugging
 flutter run --profile
  
+
 
 # Client
 This is the phone application
@@ -51,3 +54,6 @@ Also, you might need o take off wifi-6 or just go to a really strong wifi connec
 MY MAIN ISSUE WAS POOR WIFI CONNECTIVITY (It really makes nothing work). It made my phone and my computer keep switching between wifi hidden networks (like 2.4GHz or something)
 
 If device not showing in xcode or flutter, try running flutter devices. Try removing trust from computer using your phone and then trusting it again. Ensure developer options are enabled.
+
+ONE MORE THING  
+Ensure that your server network is on discoverable. My windows PC was set on public network meaning it was automatically hiding itself from other devices on the network. Since I was home, I changed its network profile to private network and it worked instantly!
