@@ -33,7 +33,9 @@ class _MediaControlPageState extends State<MediaControlPage> {
   void _startSending(AppState appState, String command) {
     appState.sendCommand(command);
     _fetchCurrentVolume();
-    _holdTimer = Timer.periodic(const Duration(milliseconds: 150), (_) {
+
+    // Keep sending while the button is held down once every X milliseconds
+    _holdTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
       appState.sendCommand(command);
       _fetchCurrentVolume();
     });
