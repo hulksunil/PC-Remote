@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-vgo/robotgo"
-
+	"pc_remote_server/keyboard"
 	"pc_remote_server/media"
+	"pc_remote_server/mouse"
 )
 
 // Globals
@@ -73,54 +73,7 @@ func CloseBlackScreen()  { log.Println("Close black screen (stub)") }
 
 
 
-// Mouse
-func MoveMouse(dx, dy int) {
-	x, y := robotgo.Location()
-	robotgo.Move(x+dx, y+dy)
-}
-func Scroll(dy int) {
-	if dy < 0 {
-		robotgo.ScrollDir(-dy, "down")
-	} else {
-		robotgo.ScrollDir(dy, "up")
-	}
-}
-func MouseClick(left bool) {
-    if left {
-        robotgo.Click("left")
-    } else {
-        robotgo.Click("right")
-    }
-}
-func MouseDown() {
-    robotgo.Toggle("left", "down")
-}
-func MouseUp() {
-    robotgo.Toggle("left", "up")
-}
 
-// Keyboard
-func TypeText(text string) {
-    robotgo.TypeStr(text)
-}
-func SpecialKey(key string) {
-    switch key {
-    case "BACKSPACE":
-        robotgo.KeyTap("backspace")
-    case "ENTER":
-        robotgo.KeyTap("enter")
-    case "ESCAPE":
-        robotgo.KeyTap("escape")
-    case "TAB":
-        robotgo.KeyTap("tab")
-    case "CTRL":
-        robotgo.KeyToggle("ctrl", "down")
-    case "CTRL_RELEASE":
-        robotgo.KeyToggle("ctrl", "up")
-    default:
-        log.Printf("Unknown special key: %s", key)
-    }
-}
 
 // ---- Network utilities ----
 func getLocalIP() string {
@@ -275,12 +228,12 @@ func startUDPServer() {
 				if len(parts) == 2 {
 					var dx, dy int
 					fmt.Sscanf(parts[1], "%d,%d", &dx, &dy)
-					MoveMouse(dx, dy)
+					mouse.MoveMouse(dx, dy)
 				}
 			} else if strings.HasPrefix(msg, SCROLL) {
 				var dy int
 				fmt.Sscanf(msg, "SCROLL:%d", &dy)
-				Scroll(dy)
+				mouse.Scroll(dy)
 			}
 		}
 	}
@@ -307,15 +260,19 @@ func executeCommand(conn net.Conn, cmd string) {
 		conn.Write([]byte(fmt.Sprintf("%d\n", vol)))
 	case strings.HasPrefix(cmd, TYPE+":"):
 		text := strings.TrimPrefix(cmd, TYPE+":")
-		TypeText(text)
+		keyboard.TypeText(text)
 	case strings.HasPrefix(cmd, SPECIAL_KEY+":"):
 		key := strings.TrimPrefix(cmd, SPECIAL_KEY+":")
-		SpecialKey(key)
+		keyboard.SpecialKey(key)
 	case cmd == CLICK_LEFT:
 		log.Println("Left click")
-		MouseClick(true)
+		mouse.MouseClick(true)
 	case cmd == CLICK_RIGHT:
-		MouseClick(false)
+		mouse.MouseClick(false)
+	case cmd == MOUSE_DOWN:
+		mouse.MouseDown()
+	case cmd == MOUSE_UP:
+		mouse.MouseUp()
 	case cmd == SLEEP:
 		SleepPC()
 	case cmd == LOCK:
@@ -326,10 +283,7 @@ func executeCommand(conn net.Conn, cmd string) {
 		ShowBlackScreen()
 	case cmd == CLOSE_BLACK_SCREEN:
 		CloseBlackScreen()
-	case cmd == MOUSE_DOWN:
-		MouseDown()
-	case cmd == MOUSE_UP:
-		MouseUp()
+
 	default:
 		log.Printf("Unknown command: %s", cmd)
 	}

@@ -62,3 +62,7 @@ func Mute() {
     keybdEvent(VK_VOLUME_MUTE, 0, 0, 0)
     keybdEvent(VK_VOLUME_MUTE, 0, KEYEVENTF_KEYUP, 0)
 }
+
+func GetVolume() int {
+    return 50
+}
