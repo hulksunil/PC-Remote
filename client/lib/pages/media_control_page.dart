@@ -30,14 +30,25 @@ class _MediaControlPageState extends State<MediaControlPage> {
     });
   }
 
-  void _startSending(AppState appState, String command) {
-    appState.sendCommand(command);
-    _fetchCurrentVolume();
+  int _lastSentTimestamp = 0;
 
-    // Keep sending while the button is held down once every X milliseconds
+  void _startSending(AppState appState, String command) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // Send immediately if enough time has passed since the last command
+    if (now - _lastSentTimestamp > 250) {
+      // 300ms threshold for taps
+      appState.sendCommand(command);
+      _fetchCurrentVolume();
+      _lastSentTimestamp = now;
+    }
+
+    // Start repeating Timer for holding
+    _holdTimer?.cancel();
     _holdTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
       appState.sendCommand(command);
       _fetchCurrentVolume();
+      _lastSentTimestamp = DateTime.now().millisecondsSinceEpoch;
     });
   }
 
