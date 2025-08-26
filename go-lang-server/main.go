@@ -20,6 +20,9 @@ var (
 	UDP_PORT       = 5556
 	shutdownSignal = make(chan struct{})
 	currentClient  net.Conn
+
+	tcpClientIP   net.IP
+    udpClientAddr *net.UDPAddr
 )
 
 // Command enum equivalent
@@ -124,7 +127,6 @@ func getLocalIP() string {
 }
 
 
-
 // ---- TCP server ----
 func startTCPServer() {
 	addr := fmt.Sprintf("%s:%d", HOST, PORT)
@@ -142,7 +144,7 @@ func startTCPServer() {
 			return
 		default:
 			listener.(*net.TCPListener).SetDeadline(time.Now().Add(time.Second))
-			conn, err := listener.Accept()
+			conn, err := listener.Accept() // Get new client connection
 			if err != nil {
 				if ne, ok := err.(net.Error); ok && ne.Timeout() {
 					continue
@@ -151,6 +153,7 @@ func startTCPServer() {
 				continue
 			}
 
+			// If a client was already connected, disconnect the newly connected one (cleanest approach since go doesn't support immediate kicking)
 			if currentClient != nil {
 				log.Printf("Rejected client: %s (already connected)\n", conn.RemoteAddr())
 				conn.Close()
@@ -158,6 +161,9 @@ func startTCPServer() {
 			}
 
 			currentClient = conn
+			tcpClientIP = conn.RemoteAddr().(*net.TCPAddr).IP
+            udpClientAddr = nil // reset UDP binding
+
 			log.Printf("Client connected: %s\n", conn.RemoteAddr())
 			go handleClient(conn)
 		}
@@ -169,6 +175,8 @@ func handleClient(conn net.Conn) {
 		log.Println("Closing client socket. Waiting for new connection...")
 		conn.Close()
 		currentClient = nil
+		tcpClientIP = nil   // clear TCP/UDP binding
+        udpClientAddr = nil
 	}()
 
 	for {
@@ -216,14 +224,39 @@ func startUDPServer() {
 			return
 		default:
 			conn.SetReadDeadline(time.Now().Add(time.Second))
-			n, _, err := conn.ReadFromUDP(buf)
-			if err != nil {
-				if ne, ok := err.(net.Error); ok && ne.Timeout() {
-					continue
-				}
-				log.Printf("UDP read error: %v", err)
-				return
-			}
+			n, clientAddr, err := conn.ReadFromUDP(buf)
+            if err != nil {
+                if ne, ok := err.(net.Error); ok && ne.Timeout() {
+                    continue
+                }
+                log.Printf("UDP read error: %v", err)
+                return
+            }
+
+            // Reject if no active TCP client
+            if tcpClientIP == nil {
+                log.Printf("Rejected UDP packet from %s (no active TCP client)\n", clientAddr)
+                continue
+            }
+
+            // Reject if IP doesn't match active TCP client
+            if !clientAddr.IP.Equal(tcpClientIP) {
+                log.Printf("Rejected UDP packet from %s (active TCP client: %s)\n", clientAddr, tcpClientIP)
+                continue
+            }
+
+            // Lock first UDP client (IP:port) once TCP client sends a packet
+            if udpClientAddr == nil {
+                udpClientAddr = clientAddr
+                log.Printf("UDP client locked to: %s\n", udpClientAddr)
+            }
+
+            // Reject if wrong port after locking
+            if clientAddr.String() != udpClientAddr.String() {
+                log.Printf("Rejected UDP packet from %s (only accepting from %s)\n", clientAddr, udpClientAddr)
+                continue
+            }
+			
 			msg := strings.TrimSpace(string(buf[:n]))
 			if strings.HasPrefix(msg, MOVE_MOUSE) {
 				// Example format: MOVE_MOUSE:10,20
