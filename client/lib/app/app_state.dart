@@ -123,8 +123,25 @@ class AppState extends ChangeNotifier {
 
   void _setupSocketListener() {
     socket!.listen((List<int> data) {
-      final response = utf8.decode(data);
+      final response = utf8.decode(data).trim();
       print('Received response: $response');
+
+      if (response == "WELCOME") {
+        // ✅ Only now do we consider ourselves connected
+        print("Server accepted connection!");
+        notifyListeners();
+      } else if (response == "REJECT") {
+        print("Server rejected connection");
+        Fluttertoast.showToast(
+          msg: "Server rejected connection (another client already connected)",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black54,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+        disconnect();
+      }
 
       // Complete the waiting future if one exists
       if (_responseCompleter != null && !_responseCompleter!.isCompleted) {
@@ -132,8 +149,10 @@ class AppState extends ChangeNotifier {
       }
     }, onError: (error) {
       print('Socket error: $error');
+      disconnect();
     }, onDone: () {
       print('Socket closed');
+      disconnect();
     });
   }
 
@@ -163,17 +182,28 @@ class AppState extends ChangeNotifier {
 
       // TCP
       socket = await Socket.connect(serverAddress!, port);
-      print("TCP connected to $ip:$port");
 
       // UDP
       udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+
+      print("TCP connected (waiting for server WELCOME)...");
       print("UDP socket bound to ${udpSocket!.port}");
 
       _setupSocketListener();
-      notifyListeners();
+      // notifyListeners();
     } catch (e) {
       print("Connection error: $e");
+      disconnect();
     }
+  }
+
+  void disconnect() {
+    socket?.destroy();
+    socket = null;
+    udpSocket?.close();
+    udpSocket = null;
+    serverAddress = null;
+    notifyListeners();
   }
 
   // NOTE: This will disconnect the socket when this page is disposed
