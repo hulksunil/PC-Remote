@@ -38,11 +38,19 @@ This is the phone application
 Done in flutter (first time)
 
 
+# Server (UPDATED)
+PC Application done in Golang  
+Run using command:  
+`cd go-lang-server`   
+`go run .`
 
-# Server
+
+
+# Server (old)
 This is the PC application
 
 Done in Python with tkinter (high potential to switch to Golang for more efficient and faster processing of data)
+
 
 
 
