@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/go-vgo/robotgo"
+
+	"pc_remote_server/media"
 )
 
 // Globals
@@ -50,13 +52,19 @@ const (
 )
 
 // ---- Stubbed platform functions ----
-func VolumeUp()          { log.Println("Volume up (stub)") }
-func VolumeDown()        { log.Println("Volume down (stub)") }
-func VolumeMute()        { log.Println("Volume mute (stub)") }
-func PlayPause()         { log.Println("Play/Pause (stub)") }
-func NextTrack()         { log.Println("Next track (stub)") }
-func PreviousTrack()     { log.Println("Previous track (stub)") }
-func GetVolume() int     { return 50 } // stub
+func VolumeUp()      { media.VolumeUp() }
+func VolumeDown()    { media.VolumeDown() }
+func VolumeMute()    { media.Mute() }
+func PlayPause()     { media.PlayPause() }
+func NextTrack()     { media.NextTrack() }
+func PreviousTrack() { media.PreviousTrack() }
+
+// still stub until we add COM/IAudio support
+func GetVolume() int { return media.GetVolume() }
+
+
+
+
 func SleepPC()           { log.Println("Sleep PC (stub)") }
 func LockPC()            { log.Println("Lock PC (stub)") }
 func ShutdownPC()        { log.Println("Shutdown PC (stub)") }
