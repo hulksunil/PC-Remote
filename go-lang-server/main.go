@@ -155,7 +155,7 @@ func startTCPServer() {
 
 			// If a client was already connected, disconnect the newly connected one (cleanest approach since go doesn't support immediate kicking)
 			if currentClient != nil {
-				log.Printf("Rejected client: %s (already connected)\n", conn.RemoteAddr())
+				log.Printf("Rejected client: %s (already connected with another client)\n", conn.RemoteAddr())
 				conn.Write([]byte("REJECT\n")) // ✅ tell Flutter it was rejected
 				conn.Close()
 				continue

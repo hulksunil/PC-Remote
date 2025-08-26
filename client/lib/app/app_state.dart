@@ -129,6 +129,14 @@ class AppState extends ChangeNotifier {
       if (response == "WELCOME") {
         // ✅ Only now do we consider ourselves connected
         print("Server accepted connection!");
+
+        // Send initial UDP packet to lock the server
+        if (udpSocket != null && serverAddress != null) {
+          final udpHello = utf8.encode("UDP_HELLO");
+          udpSocket!.send(udpHello, serverAddress!, udpPort);
+          print("Sent initial UDP_HELLO packet to server");
+        }
+
         notifyListeners();
       } else if (response == "REJECT") {
         print("Server rejected connection");

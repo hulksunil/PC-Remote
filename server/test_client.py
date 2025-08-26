@@ -58,7 +58,15 @@ def print_menu():
 def start_client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((HOST, PORT))
-    print(f"Connected to {HOST}:{PORT}")
+
+    response = client_socket.recv(1024).decode().strip()
+    print(f"Server response: {response}")
+    if response == "WELCOME":
+        print(f"Connected to {HOST}:{PORT}")
+    else:
+        print("Connection failed.")
+        client_socket.close()
+        return
 
     try:
         while True:
