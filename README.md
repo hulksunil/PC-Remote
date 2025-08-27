@@ -6,15 +6,25 @@ Application done with sockets using TCP and UDP for low-latency and instant feed
 ## Quick Start
 1. cd into client/
 2. run `flutter pub get`
-3. cd into server/
-4. run `py server.py`
+3. cd into go-lang-server/
+4. run `go run .`
 
 ### If ios build not working, try this
 flutter clean  
 flutter pub get 
 flutter build ios 
 
-## To get single file server  
+## To get single file server (UPDATED golang)
+### on mac
+`go build -o PCRemoteServer main.go`
+place that binary in PCRemoteServer.app/Contents
+
+### on windows
+`go build -ldflags="-H=windowsgui" -o PCRemoteServer.exe main.go`
+
+
+
+## To get single file server (old)
 `pyinstaller --noconsole --onefile server.py --name pc_remote_server`  
 
 run dist/server.exe
