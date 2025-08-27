@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"pc_remote_server/keyboard"
-	"pc_remote_server/logger"
-	"pc_remote_server/media"
-	"pc_remote_server/mouse"
-	"pc_remote_server/powercontrols"
+	"pc_remote_server/utils/keyboard"
+	"pc_remote_server/utils/logger"
+	"pc_remote_server/utils/media"
+	"pc_remote_server/utils/mouse"
+	"pc_remote_server/utils/powercontrols"
 
 	"os"
 
