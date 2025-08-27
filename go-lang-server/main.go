@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"runtime"
 	"strings"
 	"time"
 
@@ -277,7 +278,20 @@ func main() {
 }
 
 func onReady() {
-	iconData, err := os.ReadFile("assets/icon64x64.png") // or .ico, .png works too
+	var iconFile string
+
+	// Choose icon depending on OS
+	switch runtime.GOOS {
+	case "windows":
+		iconFile = "assets/icon.ico" // Windows tray requires .ico
+	case "darwin":
+		// iconFile = "assets/icon64x64.icns" // macOS tray requires .icns
+		iconFile = "assets/icon64.png" // TODO(sunil): gotta check if .icns works so I put this for now
+	default:
+		iconFile = "assets/icon64.png" // fallback for Linux, etc.
+	}
+
+	iconData, err := os.ReadFile(iconFile)
 	if err != nil {
 		log.Fatal(err)
 	}

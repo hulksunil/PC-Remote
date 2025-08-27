@@ -155,3 +155,12 @@
 2025/08/27 00:43:51 main.go:142: Received command: CLICK_LEFT
 2025/08/27 00:43:51 main.go:221: Executing command: CLICK_LEFT
 2025/08/27 00:43:51 main.go:245: Left click
+2025/08/27 00:53:53 main.go:77: TCP server listening on 192.168.2.18:5555
+2025/08/27 00:53:53 main.go:158: UDP server listening on 192.168.2.18:5556
+2025/08/27 00:54:33 main.go:158: UDP server listening on 192.168.2.18:5556
+2025/08/27 00:54:33 main.go:77: TCP server listening on 192.168.2.18:5555
+2025/08/27 00:54:46 main.go:77: TCP server listening on 192.168.2.18:5555
+2025/08/27 00:54:46 main.go:158: UDP server listening on 192.168.2.18:5556
+2025/08/27 01:19:03 main.go:159: UDP server listening on 192.168.2.18:5556
+2025/08/27 01:19:03 main.go:78: TCP server listening on 192.168.2.18:5555
+2025/08/27 01:19:14 main.go:313: IP menu clicked
