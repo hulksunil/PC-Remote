@@ -170,3 +170,62 @@
 2025/08/27 01:24:34 main.go:78: TCP server listening on 192.168.2.18:5555
 2025/08/27 01:31:32 main.go:78: TCP server listening on 192.168.2.40:5555
 2025/08/27 01:31:32 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:40:43 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:40:43 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 01:42:43 main.go:110: Client connected: 192.168.2.39:60800
+2025/08/27 01:42:43 main.go:193: UDP client locked to: 192.168.2.39:64084
+2025/08/27 01:42:46 main.go:143: Received command: CLICK_LEFT
+2025/08/27 01:42:46 main.go:222: Executing command: CLICK_LEFT
+2025/08/27 01:42:46 main.go:246: Left click
+2025/08/27 01:42:54 main.go:98: Rejected client: 192.168.2.39:60802 (already connected with another client)
+2025/08/27 01:43:01 main.go:137: Client disconnected: EOF
+2025/08/27 01:43:01 main.go:118: Closing client socket. Waiting for new connection...
+2025/08/27 01:43:08 main.go:110: Client connected: 192.168.2.39:60804
+2025/08/27 01:43:08 main.go:193: UDP client locked to: 192.168.2.39:51697
+2025/08/27 01:43:12 main.go:143: Received command: CLICK_LEFT
+2025/08/27 01:43:12 main.go:222: Executing command: CLICK_LEFT
+2025/08/27 01:43:12 main.go:246: Left click
+2025/08/27 01:43:30 main.go:137: Client disconnected: EOF
+2025/08/27 01:43:30 main.go:118: Closing client socket. Waiting for new connection...
+2025/08/27 01:45:06 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:45:06 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 01:46:33 main.go:75: TCP server listening on 192.168.2.40:5555
+2025/08/27 01:46:33 main.go:156: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:46:45 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:46:45 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 01:47:28 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:47:28 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 01:47:28 main.go:290: Using mac icon
+2025/08/27 01:50:37 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 01:50:37 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:04:21 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:04:21 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:04:21 main.go:298: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:04:51 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:04:51 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:04:51 main.go:298: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:07:51 main.go:157: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:07:51 main.go:76: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:08:09 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:08:09 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:08:09 main.go:287: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:09:12 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:09:12 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:09:12 main.go:287: Setting tray icon from file: assets/icon64.png
+2025/08/27 02:14:58 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:14:58 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:14:58 main.go:293: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:15:09 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:15:09 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:15:09 main.go:293: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:15:49 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:15:49 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:15:49 main.go:293: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:18:36 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:18:36 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:18:36 main.go:293: Setting tray icon from file: assets/icon64.icns
+2025/08/27 02:18:49 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:18:49 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:20:09 main.go:159: UDP server listening on 192.168.2.40:5556
+2025/08/27 02:20:09 main.go:78: TCP server listening on 192.168.2.40:5555
+2025/08/27 02:20:16 main.go:311: IP menu clicked

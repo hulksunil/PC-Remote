@@ -267,17 +267,7 @@ func executeCommand(conn net.Conn, cmd string) {
 	}
 }
 
-func main() {
-	// Initialize logger
-	logger.Init("logs/app.log")
-
-	go startTCPServer() // your server code
-	go startUDPServer() // your server code
-
-	systray.Run(onReady, onExit)
-}
-
-func onReady() {
+func getIconFilePath() string {
 	var iconFile string
 
 	// Choose icon depending on OS
@@ -285,11 +275,16 @@ func onReady() {
 	case "windows":
 		iconFile = "assets/icon.ico" // Windows tray requires .ico
 	case "darwin":
-		// iconFile = "assets/icon64x64.icns" // macOS tray requires .icns
-		iconFile = "assets/icon64.png" // TODO(sunil): gotta check if .icns works so I put this for now
+		iconFile = "assets/icon64.icns" // macOS tray requires .icns
+		// iconFile = "assets/icon64.png" // TODO(sunil): gotta check if .icns works so I put this for now
 	default:
 		iconFile = "assets/icon64.png" // fallback for Linux, etc.
 	}
+	return iconFile
+}
+
+func onReady() {
+	iconFile := getIconFilePath()
 
 	iconData, err := os.ReadFile(iconFile)
 	if err != nil {
@@ -297,7 +292,10 @@ func onReady() {
 	}
 	systray.SetIcon(iconData)
 
-	systray.SetTitle("PC Remote Server")
+	if runtime.GOOS == "windows" || runtime.GOOS == "linux" {
+		systray.SetTitle("PC Remote Server")
+	}
+
 	systray.SetTooltip("Server running")
 
 	localIP := getLocalIP()
@@ -318,4 +316,14 @@ func onReady() {
 
 func onExit() {
 	// clean up
+}
+
+func main() {
+	// Initialize logger
+	logger.Init("logs/app.log")
+
+	go startTCPServer() // your server code
+	go startUDPServer() // your server code
+
+	systray.Run(onReady, onExit)
 }
