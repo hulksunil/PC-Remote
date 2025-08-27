@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"pc_remote_server/keyboard"
+	"pc_remote_server/logger"
 	"pc_remote_server/media"
 	"pc_remote_server/mouse"
+	"pc_remote_server/powercontrols"
+
+	"os"
+
+	"github.com/getlantern/systray"
 )
 
 // Globals
@@ -24,56 +27,32 @@ var (
 	currentClient  net.Conn
 
 	tcpClientIP   net.IP
-    udpClientAddr *net.UDPAddr
+	udpClientAddr *net.UDPAddr
 )
 
 // Command enum equivalent
 const (
-	VOLUME_UP        = "VOLUME_UP"
-	VOLUME_DOWN      = "VOLUME_DOWN"
-	VOLUME_MUTE      = "VOLUME_MUTE"
-	PLAY_PAUSE       = "PLAY_PAUSE"
-	NEXT_TRACK       = "NEXT_TRACK"
-	PREVIOUS_TRACK   = "PREVIOUS_TRACK"
-	CURRENT_VOLUME   = "CURRENT_VOLUME"
-	MOVE_MOUSE       = "MOVE_MOUSE"
-	MOUSE_DOWN       = "MOUSE_DOWN"
-	MOUSE_UP         = "MOUSE_UP"
-	CLICK_LEFT       = "CLICK_LEFT"
-	CLICK_RIGHT      = "CLICK_RIGHT"
-	SCROLL           = "SCROLL"
-	SLEEP            = "SLEEP"
-	LOCK             = "LOCK"
-	SHUTDOWN         = "SHUTDOWN"
-	SHOW_BLACK_SCREEN = "SHOW_BLACK_SCREEN"
+	VOLUME_UP          = "VOLUME_UP"
+	VOLUME_DOWN        = "VOLUME_DOWN"
+	VOLUME_MUTE        = "VOLUME_MUTE"
+	PLAY_PAUSE         = "PLAY_PAUSE"
+	NEXT_TRACK         = "NEXT_TRACK"
+	PREVIOUS_TRACK     = "PREVIOUS_TRACK"
+	CURRENT_VOLUME     = "CURRENT_VOLUME"
+	MOVE_MOUSE         = "MOVE_MOUSE"
+	MOUSE_DOWN         = "MOUSE_DOWN"
+	MOUSE_UP           = "MOUSE_UP"
+	CLICK_LEFT         = "CLICK_LEFT"
+	CLICK_RIGHT        = "CLICK_RIGHT"
+	SCROLL             = "SCROLL"
+	SLEEP              = "SLEEP"
+	LOCK               = "LOCK"
+	SHUTDOWN           = "SHUTDOWN"
+	SHOW_BLACK_SCREEN  = "SHOW_BLACK_SCREEN"
 	CLOSE_BLACK_SCREEN = "CLOSE_BLACK_SCREEN"
-	TYPE             = "TYPE"
-	SPECIAL_KEY      = "SPECIAL_KEY"
+	TYPE               = "TYPE"
+	SPECIAL_KEY        = "SPECIAL_KEY"
 )
-
-// ---- Stubbed platform functions ----
-func VolumeUp()      { media.VolumeUp() }
-func VolumeDown()    { media.VolumeDown() }
-func VolumeMute()    { media.Mute() }
-func PlayPause()     { media.PlayPause() }
-func NextTrack()     { media.NextTrack() }
-func PreviousTrack() { media.PreviousTrack() }
-
-// still stub until we add COM/IAudio support
-func GetVolume() int { return media.GetVolume() }
-
-
-
-
-func SleepPC()           { log.Println("Sleep PC (stub)") }
-func LockPC()            { log.Println("Lock PC (stub)") }
-func ShutdownPC()        { log.Println("Shutdown PC (stub)") }
-func ShowBlackScreen()   { log.Println("Show black screen (stub)") }
-func CloseBlackScreen()  { log.Println("Close black screen (stub)") }
-
-
-
-
 
 // ---- Network utilities ----
 func getLocalIP() string {
@@ -86,7 +65,6 @@ func getLocalIP() string {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	return localAddr.IP.String()
 }
-
 
 // ---- TCP server ----
 func startTCPServer() {
@@ -124,7 +102,7 @@ func startTCPServer() {
 
 			currentClient = conn
 			tcpClientIP = conn.RemoteAddr().(*net.TCPAddr).IP
-            udpClientAddr = nil // reset UDP binding
+			udpClientAddr = nil // reset UDP binding
 
 			// Tell Flutter it was accepted
 			conn.Write([]byte("WELCOME\n"))
@@ -139,8 +117,8 @@ func handleClient(conn net.Conn) {
 		log.Println("Closing client socket. Waiting for new connection...")
 		conn.Close()
 		currentClient = nil
-		tcpClientIP = nil   // clear TCP/UDP binding
-        udpClientAddr = nil
+		tcpClientIP = nil // clear TCP/UDP binding
+		udpClientAddr = nil
 	}()
 
 	for {
@@ -179,7 +157,6 @@ func startUDPServer() {
 	defer conn.Close()
 	log.Printf("UDP server listening on %s:%d\n", getLocalIP(), UDP_PORT)
 
-
 	buf := make([]byte, 1024)
 	for {
 		select {
@@ -189,38 +166,38 @@ func startUDPServer() {
 		default:
 			conn.SetReadDeadline(time.Now().Add(time.Second))
 			n, clientAddr, err := conn.ReadFromUDP(buf)
-            if err != nil {
-                if ne, ok := err.(net.Error); ok && ne.Timeout() {
-                    continue
-                }
-                log.Printf("UDP read error: %v", err)
-                return
-            }
+			if err != nil {
+				if ne, ok := err.(net.Error); ok && ne.Timeout() {
+					continue
+				}
+				log.Printf("UDP read error: %v", err)
+				return
+			}
 
-            // Reject if no active TCP client
-            if tcpClientIP == nil {
-                log.Printf("Rejected UDP packet from %s (no active TCP client)\n", clientAddr)
-                continue
-            }
+			// Reject if no active TCP client
+			if tcpClientIP == nil {
+				log.Printf("Rejected UDP packet from %s (no active TCP client)\n", clientAddr)
+				continue
+			}
 
-            // Reject if IP doesn't match active TCP client
-            if !clientAddr.IP.Equal(tcpClientIP) {
-                log.Printf("Rejected UDP packet from %s (active TCP client: %s)\n", clientAddr, tcpClientIP)
-                continue
-            }
+			// Reject if IP doesn't match active TCP client
+			if !clientAddr.IP.Equal(tcpClientIP) {
+				log.Printf("Rejected UDP packet from %s (active TCP client: %s)\n", clientAddr, tcpClientIP)
+				continue
+			}
 
-            // Lock first UDP client (IP:port) once TCP client sends a packet
-            if udpClientAddr == nil {
-                udpClientAddr = clientAddr
-                log.Printf("UDP client locked to: %s\n", udpClientAddr)
-            }
+			// Lock first UDP client (IP:port) once TCP client sends a packet
+			if udpClientAddr == nil {
+				udpClientAddr = clientAddr
+				log.Printf("UDP client locked to: %s\n", udpClientAddr)
+			}
 
-            // Reject if wrong port after locking
-            if clientAddr.String() != udpClientAddr.String() {
-                log.Printf("Rejected UDP packet from %s (only accepting from %s)\n", clientAddr, udpClientAddr)
-                continue
-            }
-			
+			// Reject if wrong port after locking
+			if clientAddr.String() != udpClientAddr.String() {
+				log.Printf("Rejected UDP packet from %s (only accepting from %s)\n", clientAddr, udpClientAddr)
+				continue
+			}
+
 			msg := strings.TrimSpace(string(buf[:n]))
 			if strings.HasPrefix(msg, MOVE_MOUSE) {
 				// Example format: MOVE_MOUSE:10,20
@@ -244,19 +221,19 @@ func executeCommand(conn net.Conn, cmd string) {
 	log.Printf("Executing command: %s", cmd)
 	switch {
 	case cmd == VOLUME_UP:
-		VolumeUp()
+		media.VolumeUp()
 	case cmd == VOLUME_DOWN:
-		VolumeDown()
+		media.VolumeDown()
 	case cmd == VOLUME_MUTE:
-		VolumeMute()
+		media.Mute()
 	case cmd == PLAY_PAUSE:
-		PlayPause()
+		media.PlayPause()
 	case cmd == NEXT_TRACK:
-		NextTrack()
+		media.NextTrack()
 	case cmd == PREVIOUS_TRACK:
-		PreviousTrack()
+		media.PreviousTrack()
 	case cmd == CURRENT_VOLUME:
-		vol := GetVolume()
+		vol := media.GetVolume()
 		conn.Write([]byte(fmt.Sprintf("%d\n", vol)))
 	case strings.HasPrefix(cmd, TYPE+":"):
 		text := strings.TrimPrefix(cmd, TYPE+":")
@@ -274,36 +251,57 @@ func executeCommand(conn net.Conn, cmd string) {
 	case cmd == MOUSE_UP:
 		mouse.MouseUp()
 	case cmd == SLEEP:
-		SleepPC()
+		powercontrols.SleepPC()
 	case cmd == LOCK:
-		LockPC()
+		powercontrols.LockPC()
 	case cmd == SHUTDOWN:
-		ShutdownPC()
+		powercontrols.ShutdownPC()
 	case cmd == SHOW_BLACK_SCREEN:
-		ShowBlackScreen()
+		powercontrols.ShowBlackScreen()
 	case cmd == CLOSE_BLACK_SCREEN:
-		CloseBlackScreen()
+		powercontrols.CloseBlackScreen()
 
 	default:
 		log.Printf("Unknown command: %s", cmd)
 	}
 }
 
-// ---- Main ----
 func main() {
-	// Handle signals for graceful shutdown
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	// Initialize logger
+	logger.Init("logs/app.log")
 
-	go startUDPServer()
-	go startTCPServer()
+	go startTCPServer() // your server code
+	go startUDPServer() // your server code
 
-	<-sigChan
-	log.Println("Exiting...")
+	systray.Run(onReady, onExit)
+}
 
-	close(shutdownSignal)
-	if currentClient != nil {
-		currentClient.Close()
+func onReady() {
+	iconData, err := os.ReadFile("assets/icon64x64.png") // or .ico, .png works too
+	if err != nil {
+		log.Fatal(err)
 	}
-	CloseBlackScreen()
+	systray.SetIcon(iconData)
+
+	systray.SetTitle("PC Remote Server")
+	systray.SetTooltip("Server running")
+
+	localIP := getLocalIP()
+	menuIP := systray.AddMenuItem(fmt.Sprintf("IP: %s", localIP), "Local IP")
+	menuQuit := systray.AddMenuItem("Quit", "Quit the server")
+
+	go func() {
+		for {
+			select {
+			case <-menuQuit.ClickedCh:
+				systray.Quit()
+			case <-menuIP.ClickedCh:
+				log.Println("IP menu clicked")
+			}
+		}
+	}()
+}
+
+func onExit() {
+	// clean up
 }
