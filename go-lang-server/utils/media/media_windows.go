@@ -3,7 +3,10 @@
 
 package media
 
-import "golang.org/x/sys/windows"
+import (
+	"github.com/itchyny/volume-go"
+	"golang.org/x/sys/windows"
+)
 
 // Import user32.dll functions
 var (
@@ -62,7 +65,10 @@ func Mute() {
 	keybdEvent(VK_VOLUME_MUTE, 0, 0, 0)
 	keybdEvent(VK_VOLUME_MUTE, 0, KEYEVENTF_KEYUP, 0)
 }
-
 func GetVolume() int {
-	return 50
+	vol, err := volume.GetVolume()
+	if err != nil {
+		return -1
+	}
+	return vol
 }
