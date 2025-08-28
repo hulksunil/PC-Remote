@@ -296,7 +296,7 @@ func onReady() {
 		systray.SetTitle("PC Remote Server")
 	}
 
-	systray.SetTooltip("Server running")
+	systray.SetTooltip("PC Remote Server\nStatus: Running")
 
 	localIP := getLocalIP()
 	menuIP := systray.AddMenuItem(fmt.Sprintf("IP: %s", localIP), "Local IP")

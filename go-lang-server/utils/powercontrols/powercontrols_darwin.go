@@ -18,10 +18,13 @@ func SleepPC() {
 // Lock locks the computer.
 func LockPC() {
 	log.Println("Locking computer...")
-	exec.Command("pmset", "displaysleepnow").Run()
+	exec.Command("osascript", "-e", `tell application "System Events" to keystroke "q" using {control down, command down}`).Run()
+
 }
 
 // Shutdown shuts down the computer.
+// NOTE: This will immediately shut down the computer without any confirmation.
+// NOTE 2: This only works if run with sudo privileges.
 func ShutdownPC() {
 	log.Println("Shutting down computer...")
 	exec.Command("shutdown", "-h", "now").Run()
