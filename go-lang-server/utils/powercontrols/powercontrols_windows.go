@@ -1,7 +1,6 @@
 //go:build windows
 // +build windows
 
-// Package powercontrols provides functions to control power settings on different platforms.
 package powercontrols
 
 import (
@@ -9,32 +8,46 @@ import (
 	"os/exec"
 )
 
-// Sleep puts the computer to sleep.
+// Sleep puts the computer to sleep (Windows).
+// NOTE: this might make it hibernate instead
 func SleepPC() {
 	log.Println("Putting computer to sleep...")
-	exec.Command("pmset", "sleepnow").Run()
+	// This uses rundll32 to call Windows API for sleep
+
+	err := exec.Command("rundll32.exe", "powrprof.dll,SetSuspendState", "0,1,0").Run()
+
+	if err != nil {
+		log.Printf("Failed to sleep: %v\n", err)
+	}
 }
 
-// Lock locks the computer.
+// Lock locks the computer (Windows).
 func LockPC() {
 	log.Println("Locking computer...")
-	exec.Command("pmset", "displaysleepnow").Run()
+	err := exec.Command("rundll32.exe", "user32.dll,LockWorkStation").Run()
+	if err != nil {
+		log.Printf("Failed to lock: %v\n", err)
+	}
 }
 
-// Shutdown shuts down the computer.
+// Shutdown shuts down the computer (Windows).
 func ShutdownPC() {
 	log.Println("Shutting down computer...")
-	exec.Command("shutdown", "-h", "now").Run()
+	// /s = shutdown, /f = force, /t 0 = no delay
+	err := exec.Command("shutdown", "/s", "/f", "/t", "0").Run()
+	if err != nil {
+		log.Printf("Failed to shutdown: %v\n", err)
+	}
 }
 
-// ShowBlackScreen shows a black screen.
+// ShowBlackScreen shows a black screen (not natively supported).
 func ShowBlackScreen() {
 	log.Println("Showing black screen (stub)...")
-	// exec.Command("pmset", "displaysleepnow").Run()
+	// You’d likely need a helper app to overlay a fullscreen window.
 }
 
-// CloseBlackScreen closes the black screen.
+// CloseBlackScreen closes the black screen (stub).
 func CloseBlackScreen() {
 	log.Println("Closing black screen (stub)...")
-	// exec.Command("pmset", "displaysleepnow").Run()
+	// Matching helper app would close here.
 }
