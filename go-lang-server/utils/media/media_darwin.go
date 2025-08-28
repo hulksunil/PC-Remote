@@ -12,7 +12,7 @@ import (
 
 // runAppleScript executes an AppleScript command
 func runAppleScript(script string) {
-    exec.Command("osascript", "-e", script).Run()
+	exec.Command("osascript", "-e", script).Run()
 }
 
 // getFrontApp returns the name of the frontmost application
@@ -70,16 +70,21 @@ func PreviousTrack() {
 	}
 }
 
+// amount to change volume by
+var volumeStep = 2
+
 func VolumeUp() {
-    runAppleScript(`set volume output volume ((output volume of (get volume settings)) + 5) --100 max`)
+	script := fmt.Sprintf(`set volume output volume ((output volume of (get volume settings)) + %d) --100 max`, volumeStep)
+	runAppleScript(script)
 }
 
 func VolumeDown() {
-    runAppleScript(`set volume output volume ((output volume of (get volume settings)) - 5) --100 min`)
+	script := fmt.Sprintf(`set volume output volume ((output volume of (get volume settings)) - %d) --100 min`, volumeStep)
+	runAppleScript(script)
 }
 
 func Mute() {
-    // Check if currently muted
+	// Check if currently muted
 	checkScript := `output muted of (get volume settings)`
 	out, err := exec.Command("osascript", "-e", checkScript).Output()
 	if err != nil {
@@ -100,22 +105,16 @@ func Mute() {
 	}
 }
 
-
-func SetVolume(level int) {
-    // level should be between 0–100
-    runAppleScript(`set volume output volume ` + strconv.Itoa(level))
-}
-
 func GetVolume() int {
-    out, err := exec.Command("osascript", "-e", `output volume of (get volume settings)`).Output()
-    if err != nil {
-        return -1 // or handle error as needed
-    }
+	out, err := exec.Command("osascript", "-e", `output volume of (get volume settings)`).Output()
+	if err != nil {
+		return -1 // or handle error as needed
+	}
 
-    vol, err := strconv.Atoi(strings.TrimSpace(string(out)))
-    if err != nil {
-        return -1
-    }
+	vol, err := strconv.Atoi(strings.TrimSpace(string(out)))
+	if err != nil {
+		return -1
+	}
 
-    return vol
+	return vol
 }
