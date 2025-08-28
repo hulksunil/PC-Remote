@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:client/services/navigation_service.dart';
 import 'package:client/pages/settings_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:client/services/IPStorage.dart';
 
 class AppState extends ChangeNotifier {
   String _ip = '';
@@ -37,6 +38,11 @@ class AppState extends ChangeNotifier {
   DateTime _lastMouseSend = DateTime.now();
 
   bool _navigatingToSettings = false;
+
+  // Constructor
+  AppState() {
+    loadSavedIps();
+  }
 
   void navigateToSettingsOnce() {
     if (_navigatingToSettings) return;
@@ -211,6 +217,28 @@ class AppState extends ChangeNotifier {
     udpSocket?.close();
     udpSocket = null;
     serverAddress = null;
+    notifyListeners();
+  }
+
+  // Handle the saved ip addresses
+  final List<String> savedIps = [];
+
+  void addSavedIp(String ip) async {
+    savedIps.add(ip);
+    await IPStorage.saveIPs(savedIps);
+    notifyListeners();
+  }
+
+  void removeSavedIp(String ip) async {
+    savedIps.remove(ip);
+    await IPStorage.saveIPs(savedIps);
+    notifyListeners();
+  }
+
+  Future<void> loadSavedIps() async {
+    final ips = await IPStorage.loadIPs();
+    savedIps.clear();
+    savedIps.addAll(ips);
     notifyListeners();
   }
 
