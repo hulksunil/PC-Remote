@@ -38,7 +38,7 @@ class _TouchpadState extends State<Touchpad> {
   Offset? _lastPosition;
   Offset _accumulatedDelta = Offset.zero;
   DateTime _lastSentTime = DateTime.now();
-  final int _throttleDelayMs = 90;
+  final int _throttleDelayMs = 16;
   final double sensitivity = 3;
   final double scrollMultiplier = 5;
 
@@ -118,7 +118,7 @@ class _TouchpadState extends State<Touchpad> {
     _accumulatedDelta += delta;
     _lastPosition = details.localPosition;
 
-    const double minMovementThreshold = 1.5;
+    const double minMovementThreshold = 0.4;
     final elapsed = now.difference(_lastSentTime).inMilliseconds;
 
     if (_accumulatedDelta.distance >= minMovementThreshold &&
