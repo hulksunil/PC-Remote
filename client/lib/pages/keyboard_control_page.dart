@@ -80,6 +80,21 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        mini: true,
+        onPressed: () {
+          if (_focusNode.hasFocus) {
+            // Keyboard is showing → hide it
+            _focusNode.unfocus();
+          } else {
+            // Keyboard is hidden → show it
+            FocusScope.of(context).requestFocus(_focusNode);
+          }
+        },
+        child: Icon(
+          _focusNode.hasFocus ? Icons.keyboard_hide : Icons.keyboard,
+        ),
+      ),
       body: Center(
         child: Opacity(
           opacity: 1,
