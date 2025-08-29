@@ -3,65 +3,53 @@ Control your PC's mouse and volume using your mobile device
 
 Application done with sockets using TCP and UDP for low-latency and instant feedback
 
+## Requirements
+- Golang
+- Flutter
+
 ## Quick Start
 1. cd into client/
 2. run `flutter pub get`
 3. cd into go-lang-server/
 4. run `go run .`
 
-### If ios build not working, try this
-flutter clean  
-flutter pub get 
-flutter build ios 
 
-## To get single file server (UPDATED golang)
-### on mac
-`go build -o PCRemoteServer main.go`
-place that binary in PCRemoteServer.app/Contents
+## Client
+Phone application done in flutter (first time)
 
-### on windows
+### Quick Start Client
+1. `cd client`
+2. `flutter clean`
+3. `flutter pub get`
+4. `flutter build`
+5. `flutter run [--profile]`
+
+
+## Server
+PC Application done in Golang (also first time)
+
+### Quick Start Server
+1. `cd go-lang-server`
+2. `go mod tidy`
+3. `go run .`
+
+
+## To get single file server
+### Mac
+`go build -o PCRemoteServer main.go`  
+Place that binary in PCRemoteServer.app/Contents
+
+### Windows
 `go build -ldflags="-H=windowsgui" -o PCRemoteServer.exe main.go`
 
-
-
-## To get single file server (old)
-`pyinstaller --noconsole --onefile server.py --name pc_remote_server`  
-
-run dist/server.exe
-
-## To get release app(android apk)
-`flutter build apk --release`
-
+## To get release app
+### android apk
+`flutter build apk --release`  
 Then go to build/app/outputs/apk/release and take the release apk
 
-## To get release app (ios)
-flutter run --release
-
-## To make ios build work when not plugged into usb debugging
-flutter run --profile
+### ios
+`flutter run --release`
  
-
-
-# Client
-This is the phone application
-
-Done in flutter (first time)
-
-
-# Server (UPDATED)
-PC Application done in Golang  
-Run using command:  
-`cd go-lang-server`   
-`go run .`
-
-
-
-# Server (old)
-This is the PC application
-
-Done in Python with tkinter (high potential to switch to Golang for more efficient and faster processing of data)
-
-
 
 
 ## WARNING
