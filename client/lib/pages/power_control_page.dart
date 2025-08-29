@@ -60,24 +60,24 @@ class PowerSettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 40), // extra space to separate it visually
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.tv, size: 28),
-              label: const Text(
-                'Blackout Secondary Monitor',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () =>
-                  _showBlackScreen(context, Command.showBlackScreen.value),
-            ),
+            // ElevatedButton.icon(
+            //   icon: const Icon(Icons.tv, size: 28),
+            //   label: const Text(
+            //     'Blackout Secondary Monitor',
+            //     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            //   ),
+            //   style: ElevatedButton.styleFrom(
+            //     minimumSize: const Size(double.infinity, 50),
+            //     backgroundColor: Colors.black,
+            //     foregroundColor: Colors.white,
+            //     elevation: 8,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //   ),
+            //   onPressed: () =>
+            //       _showBlackScreen(context, Command.showBlackScreen.value),
+            // ),
           ],
         ),
       ),

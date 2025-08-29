@@ -114,11 +114,11 @@ class _HomePageState extends State<HomePage> {
             label: 'Power',
             backgroundColor: Colors.redAccent,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.keyboard),
-            label: 'Keyboard',
-            backgroundColor: Colors.indigo,
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.keyboard),
+          //   label: 'Keyboard',
+          //   backgroundColor: Colors.indigo,
+          // ),
         ],
       ),
     );

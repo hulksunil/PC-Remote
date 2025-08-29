@@ -220,7 +220,7 @@ class _TouchpadState extends State<Touchpad> {
                 child: const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    'Touch and drag to move the mouse\nTwo-finger drag to scroll\nTwo-finger tap to right-click',
+                    'Touch and drag to move the mouse',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16),
                   ),

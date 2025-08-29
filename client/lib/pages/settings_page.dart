@@ -119,55 +119,55 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 20),
 
             // --- THEME PICKER BUTTON ---
-            OutlinedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    Color pickerColor = context.read<AppState>().themeColor;
-                    return AlertDialog(
-                      title: const Text('Pick a Theme Color'),
-                      content: SingleChildScrollView(
-                        child: ColorPicker(
-                          pickerColor: pickerColor,
-                          onColorChanged: (color) {
-                            pickerColor = color;
-                          },
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          child: const Text('Cancel'),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                        TextButton(
-                          child: const Text('Select'),
-                          onPressed: () {
-                            context.read<AppState>().setThemeColor(pickerColor);
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              icon: Icon(Icons.palette,
-                  color: Theme.of(context).colorScheme.primary),
-              label: Text(
-                "Change Theme Color",
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              ),
-            )
+            // OutlinedButton.icon(
+            //   onPressed: () {
+            //     showDialog(
+            //       context: context,
+            //       builder: (context) {
+            //         Color pickerColor = context.read<AppState>().themeColor;
+            //         return AlertDialog(
+            //           title: const Text('Pick a Theme Color'),
+            //           content: SingleChildScrollView(
+            //             child: ColorPicker(
+            //               pickerColor: pickerColor,
+            //               onColorChanged: (color) {
+            //                 pickerColor = color;
+            //               },
+            //             ),
+            //           ),
+            //           actions: [
+            //             TextButton(
+            //               child: const Text('Cancel'),
+            //               onPressed: () => Navigator.of(context).pop(),
+            //             ),
+            //             TextButton(
+            //               child: const Text('Select'),
+            //               onPressed: () {
+            //                 context.read<AppState>().setThemeColor(pickerColor);
+            //                 Navigator.of(context).pop();
+            //               },
+            //             ),
+            //           ],
+            //         );
+            //       },
+            //     );
+            //   },
+            //   icon: Icon(Icons.palette,
+            //       color: Theme.of(context).colorScheme.primary),
+            //   label: Text(
+            //     "Change Theme Color",
+            //     style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            //   ),
+            //   style: OutlinedButton.styleFrom(
+            //     side: BorderSide(color: Theme.of(context).colorScheme.primary),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(20),
+            //     ),
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            //     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            //   ),
+            // )
           ],
         ),
       ),
