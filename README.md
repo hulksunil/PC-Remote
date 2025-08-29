@@ -21,22 +21,24 @@ This application uses sockets with **TCP** and **UDP** for low-latency and insta
 
 <table align="center">
   <tr>
-    <td align="center">
+    <td align="center" width="50%">
       <img src="assets/mouse_control_page.png" alt="Mouse Control Page" width="200"/><br/>
       <strong>Mouse Control</strong><br/>
       <em>Move cursor, left/right click, and scroll</em>
     </td>
-    <td align="center">
+    <td align="center" width="50%">
       <img src="assets/volume_control_page.png" alt="Volume Control Page" width="200"/><br/>
       <strong>Volume Control</strong><br/>
       <em>Adjust system volume and mute/unmute</em>
     </td>
-    <td align="center">
+  </tr>
+  <tr>
+    <td align="center" width="50%">
       <img src="assets/power_control_page.png" alt="Power Control Page" width="200"/><br/>
       <strong>Power Control</strong><br/>
       <em>Shutdown, lock, or sleep your PC</em>
     </td>
-    <td align="center">
+    <td align="center" width="50%">
       <img src="assets/settings_page.png" alt="Settings Page" width="200"/><br/>
       <strong>Settings</strong><br/>
       <em>Configure the connected server and easily save or delete favorites</em>
