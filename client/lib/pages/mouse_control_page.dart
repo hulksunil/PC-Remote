@@ -267,31 +267,26 @@ class ScrollbarControl extends StatefulWidget {
 }
 
 class _ScrollbarControlState extends State<ScrollbarControl> {
-  double _dragStartY = 0;
-  double _accumulatedDelta = 0;
+  double _lastY = 0;
   DateTime _lastSentTime = DateTime.now();
-  final int _throttleDelayMs = 90;
-  final double _threshold = 8; // minimum vertical drag before sending scroll
+  final int _throttleMs = 16; // ~60 updates per second
 
   void _handleDragStart(DragStartDetails details) {
-    _dragStartY = details.localPosition.dy;
-    _accumulatedDelta = 0;
+    _lastY = details.localPosition.dy;
   }
 
   void _handleDragUpdate(AppState appState, DragUpdateDetails details) {
+    final currentY = details.localPosition.dy;
+    final dy = currentY - _lastY;
+    _lastY = currentY;
+
     final now = DateTime.now();
-    final dy = details.localPosition.dy - _dragStartY;
-    _dragStartY = details.localPosition.dy;
-
-    _accumulatedDelta += dy;
-
-    if (now.difference(_lastSentTime).inMilliseconds >= _throttleDelayMs &&
-        _accumulatedDelta.abs() >= _threshold) {
-      _lastSentTime = now;
-
-      final scrollAmount = -(_accumulatedDelta * 5).round();
-      appState.sendScroll(scrollAmount);
-      _accumulatedDelta = 0;
+    if (now.difference(_lastSentTime).inMilliseconds >= _throttleMs) {
+      final scrollAmount = -(dy * 2).round(); // adjust multiplier for speed
+      if (scrollAmount != 0) {
+        appState.sendScroll(scrollAmount);
+        _lastSentTime = now;
+      }
     }
   }
 
@@ -314,30 +309,27 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
           onVerticalDragStart: _handleDragStart,
           onVerticalDragUpdate: (details) =>
               _handleDragUpdate(appState, details),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_upward,
-                      color: theme.colorScheme.primary),
-                  onPressed: () => appState.sendScroll(300),
-                ),
-                const Expanded(
-                  child: Center(
-                    child: RotatedBox(
-                      quarterTurns: 1,
-                      child: Icon(Icons.drag_handle, size: 20),
-                    ),
+          child: Column(
+            children: [
+              IconButton(
+                icon:
+                    Icon(Icons.arrow_upward, color: theme.colorScheme.primary),
+                onPressed: () => appState.sendScroll(5),
+              ),
+              const Expanded(
+                child: Center(
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: Icon(Icons.drag_handle, size: 20),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.arrow_downward,
-                      color: theme.colorScheme.primary),
-                  onPressed: () => appState.sendScroll(-300),
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_downward,
+                    color: theme.colorScheme.primary),
+                onPressed: () => appState.sendScroll(-5),
+              ),
+            ],
           ),
         ),
       ),
