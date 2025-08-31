@@ -229,37 +229,30 @@ class _TouchpadState extends State<Touchpad> {
             ),
           ),
         ),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => appState.sendCommand(Command.clickLeft.value),
-                style: ElevatedButton.styleFrom(
-                    // backgroundColor: Colors.grey[400],
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 30),
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryFixedDim),
-                child: const Text(""),
+        SizedBox(
+          height: 80, // desired button height
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTapDown: (_) =>
+                      appState.sendCommand(Command.mouseDown.value),
+                  onTapUp: (_) => appState.sendCommand(Command.mouseUp.value),
+                  child: Container(
+                    color: Theme.of(context).colorScheme.primaryFixedDim,
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => appState.sendCommand(Command.clickRight.value),
-                style: ElevatedButton.styleFrom(
-                    // backgroundColor: Colors.grey[400],
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 30),
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryFixedDim),
-                child: const Text(""),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => appState.sendCommand(Command.clickRight.value),
+                  child: Container(
+                    color: Theme.of(context).colorScheme.primaryFixedDim,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
