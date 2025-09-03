@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -275,8 +276,15 @@ func getIconFilePath() string {
 	case "windows":
 		iconFile = "assets/icon.ico" // Windows tray requires .ico
 	case "darwin":
-		iconFile = "assets/icon64.icns" // macOS tray requires .icns
-		// iconFile = "assets/icon64.png" // TODO(sunil): gotta check if .icns works so I put this for now
+
+		if isDevMode() {
+			iconFile = "assets/icon64.png" // Dev mode on macOS can use .png
+		} else {
+			// In .app bundle, look inside Resources
+			execPath, _ := os.Executable()
+			appRoot := filepath.Dir(filepath.Dir(filepath.Dir(execPath))) // up from Contents/MacOS
+			return filepath.Join(appRoot, "Contents/Resources", "icon64.icns")
+		}
 	default:
 		iconFile = "assets/icon64.png" // fallback for Linux, etc.
 	}
@@ -320,10 +328,41 @@ func onExit() {
 
 func main() {
 	// Initialize logger
-	logger.Init("logs/app.log")
+	logPath := getLogPath()
+	logger.Init(logPath)
 
 	go startTCPServer() // your server code
 	go startUDPServer() // your server code
 
 	systray.Run(onReady, onExit)
+}
+
+func isDevMode() bool {
+	execPath, _ := os.Executable()
+	return !strings.Contains(execPath, ".app/Contents/MacOS")
+}
+
+func getLogPath() string {
+	if isDevMode() {
+		// Dev: keep logs in project folder
+		os.MkdirAll("logs", 0755)
+		return filepath.Join("logs", "app.log")
+	}
+
+	// Prod: platform-specific log location
+	home, _ := os.UserHomeDir()
+	switch runtime.GOOS {
+	case "darwin": // macOS
+		logDir := filepath.Join(home, "Library", "Logs", "PCRemoteServer")
+		os.MkdirAll(logDir, 0755)
+		return filepath.Join(logDir, "app.log")
+	case "windows":
+		logDir := filepath.Join(home, "AppData", "Roaming", "PCRemoteServer", "logs")
+		os.MkdirAll(logDir, 0755)
+		return filepath.Join(logDir, "app.log")
+	default: // Linux or others
+		logDir := filepath.Join(home, ".pcremoteserver", "logs")
+		os.MkdirAll(logDir, 0755)
+		return filepath.Join(logDir, "app.log")
+	}
 }

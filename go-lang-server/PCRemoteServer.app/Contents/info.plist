@@ -7,7 +7,7 @@
     <key>CFBundleExecutable</key>
     <string>PCRemoteServer</string>
     <key>CFBundleIconFile</key>
-    <string>MyIcon</string>
+    <string>icon64</string>
     <key>LSUIElement</key>
     <string>1</string>
 </dict>
