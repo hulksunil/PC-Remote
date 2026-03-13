@@ -183,15 +183,6 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
     });
   }
 
-  void _clearComposer() {
-    _isApplyingProgrammaticText = true;
-    _controller.clear();
-    _previousText = '';
-    _sessionComposer = '';
-    _isApplyingProgrammaticText = false;
-    _topUpLocalBuffer();
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -309,11 +300,6 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                   runSpacing: 8,
                   children: [
                     FilledButton.tonalIcon(
-                      onPressed: () => _sendSpecialKey('BACKSPACE'),
-                      icon: const Icon(Icons.backspace_outlined),
-                      label: const Text('Backspace'),
-                    ),
-                    FilledButton.tonalIcon(
                       onPressed: () => _sendSpecialKey('ENTER'),
                       icon: const Icon(Icons.keyboard_return),
                       label: const Text('Enter'),
@@ -339,11 +325,6 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                       ),
                       onPressed: _toggleCtrl,
                       child: Text(_ctrlHeld ? 'Ctrl (Held)' : 'Ctrl'),
-                    ),
-                    TextButton.icon(
-                      onPressed: _clearComposer,
-                      icon: const Icon(Icons.clear),
-                      label: const Text('Clear box'),
                     ),
                   ],
                 ),
