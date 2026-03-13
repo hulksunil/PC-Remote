@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:client/app/app_state.dart';
 import 'package:client/models/command.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MouseControlPage extends StatefulWidget {
   const MouseControlPage({super.key});
+
   @override
   State<MouseControlPage> createState() => _MouseControlPageState();
 }
@@ -12,16 +13,15 @@ class MouseControlPage extends StatefulWidget {
 class _MouseControlPageState extends State<MouseControlPage> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 9,
-          child: Touchpad(),
-        ),
-        const SizedBox(width: 2),
-        // Right-side scrollbar or simulated vertical strip
-        ScrollbarControl(),
-      ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+      child: Row(
+        children: const [
+          Expanded(flex: 9, child: Touchpad()),
+          SizedBox(width: 8),
+          ScrollbarControl(),
+        ],
+      ),
     );
   }
 }
@@ -38,6 +38,7 @@ class _TouchpadState extends State<Touchpad> {
   Offset _pendingMouseDelta = Offset.zero;
   double _pendingScrollRemainder = 0;
   DateTime _lastSentTime = DateTime.now();
+
   final int _throttleDelayMs = 16;
   final double sensitivity = 3;
   final double scrollMultiplier = 2;
@@ -51,10 +52,18 @@ class _TouchpadState extends State<Touchpad> {
   bool _potentialTwoFingerTap = false;
 
   bool _suppressNextTap = false;
-
   DateTime? _lastTapTime;
   Offset? _lastTapPosition;
   bool _isDraggingFromDoubleTap = false;
+  bool _showHint = true;
+
+  void _markInteracted() {
+    if (_showHint) {
+      setState(() {
+        _showHint = false;
+      });
+    }
+  }
 
   void _handlePointerDown(AppState appState, PointerDownEvent event) {
     if (!appState.isConnected) {
@@ -62,7 +71,9 @@ class _TouchpadState extends State<Touchpad> {
       return;
     }
 
+    _markInteracted();
     _activePointers++;
+
     if (_activePointers == 2) {
       _isTwoFingerGesture = true;
       _lastFocalPoint = null;
@@ -70,7 +81,6 @@ class _TouchpadState extends State<Touchpad> {
       _pendingScrollRemainder = 0;
       _lastPointerCount = 2;
 
-      // Start tracking for potential two-finger tap
       _twoFingerTapStart = DateTime.now();
       _twoFingerTapStartPos = event.position;
       _potentialTwoFingerTap = true;
@@ -95,8 +105,7 @@ class _TouchpadState extends State<Touchpad> {
         if (duration < 200 && distance < 20) {
           final appState = context.read<AppState>();
           appState.sendCommand(Command.clickRight.value);
-
-          _suppressNextTap = true; // Suppress left click
+          _suppressNextTap = true;
         }
 
         _potentialTwoFingerTap = false;
@@ -122,7 +131,6 @@ class _TouchpadState extends State<Touchpad> {
       return;
     }
 
-    // Ignore the transition frame when pointer count changes to avoid jumps.
     if (pointerCount != _lastPointerCount) {
       _lastFocalPoint = details.localFocalPoint;
       _pendingMouseDelta = Offset.zero;
@@ -156,9 +164,8 @@ class _TouchpadState extends State<Touchpad> {
     if (_pendingMouseDelta.distance >= minMovementThreshold &&
         elapsed >= _throttleDelayMs) {
       final speed = _pendingMouseDelta.distance / elapsed.clamp(1, 1000);
-      final velocityBoost = _isDraggingFromDoubleTap
-          ? 1.0
-          : (speed * 3).clamp(1.0, 3.0);
+      final velocityBoost =
+          _isDraggingFromDoubleTap ? 1.0 : (speed * 3).clamp(1.0, 3.0);
 
       final dx = (_pendingMouseDelta.dx * sensitivity * velocityBoost).round();
       final dy = (_pendingMouseDelta.dy * sensitivity * velocityBoost).round();
@@ -187,93 +194,171 @@ class _TouchpadState extends State<Touchpad> {
   @override
   Widget build(BuildContext context) {
     final appState = context.read<AppState>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Column(
       children: [
         Expanded(
-          child: Listener(
-            onPointerDown: (event) => _handlePointerDown(appState, event),
-            onPointerUp: _handlePointerUp,
-            child: GestureDetector(
-              onScaleStart: _handleScaleStart,
-              onScaleUpdate: (details) => _handleScaleUpdate(appState, details),
-              onScaleEnd: (details) => _handleScaleEnd(appState, details),
-              onTapDown: (details) {
-                final now = DateTime.now();
-                final pos = details.localPosition;
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            child: Listener(
+              onPointerDown: (event) => _handlePointerDown(appState, event),
+              onPointerUp: _handlePointerUp,
+              child: GestureDetector(
+                onScaleStart: _handleScaleStart,
+                onScaleUpdate: (details) =>
+                    _handleScaleUpdate(appState, details),
+                onScaleEnd: (details) => _handleScaleEnd(appState, details),
+                onTapDown: (details) {
+                  _markInteracted();
+                  final now = DateTime.now();
+                  final pos = details.localPosition;
 
-                if (_lastTapTime != null &&
-                    now.difference(_lastTapTime!).inMilliseconds < 300 &&
-                    (pos - _lastTapPosition!).distance < 20) {
-                  // Detected double tap
-                  _isDraggingFromDoubleTap = true;
-                  appState.sendCommand(Command.mouseDown.value);
-                }
+                  if (_lastTapTime != null &&
+                      now.difference(_lastTapTime!).inMilliseconds < 300 &&
+                      (pos - _lastTapPosition!).distance < 20) {
+                    _isDraggingFromDoubleTap = true;
+                    appState.sendCommand(Command.mouseDown.value);
+                  }
 
-                _lastTapTime = now;
-                _lastTapPosition = pos;
-              },
-              onTapUp: (details) {
-                if (_isDraggingFromDoubleTap) {
-                  // Do nothing yet; wait for scale end to send mouse up
-                } else if (!_isTwoFingerGesture && !_suppressNextTap) {
-                  appState.sendCommand(Command.clickLeft.value);
-                }
+                  _lastTapTime = now;
+                  _lastTapPosition = pos;
+                },
+                onTapUp: (details) {
+                  if (_isDraggingFromDoubleTap) {
+                    // Mouse up sent at scale end
+                  } else if (!_isTwoFingerGesture && !_suppressNextTap) {
+                    appState.sendCommand(Command.clickLeft.value);
+                  }
 
-                _suppressNextTap = false;
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+                  _suppressNextTap = false;
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.primaryContainer,
+                        colorScheme.secondaryContainer,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Touch and drag to move the mouse',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.shadow.withValues(alpha: 0.12),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      if (_showHint)
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          right: 12,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _showHint ? 1 : 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    colorScheme.surface.withValues(alpha: 0.82),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Drag to move • Two-finger drag to scroll • Two-finger tap for right-click',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.labelLarge,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
         ),
+        const SizedBox(height: 8),
         SizedBox(
-          height: 80, // desired button height
+          height: 84,
           child: Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTapDown: (_) =>
+                child: _ClickButton(
+                  icon: Icons.mouse,
+                  label: 'Left Click',
+                  onTapDown: () =>
                       appState.sendCommand(Command.mouseDown.value),
-                  onTapUp: (_) => appState.sendCommand(Command.mouseUp.value),
-                  child: Container(
-                    color: Theme.of(context).colorScheme.primaryFixedDim,
-                  ),
+                  onTapUp: () => appState.sendCommand(Command.mouseUp.value),
                 ),
               ),
+              const SizedBox(width: 8),
               Expanded(
-                child: GestureDetector(
+                child: _ClickButton(
+                  icon: Icons.ads_click,
+                  label: 'Right Click',
                   onTap: () => appState.sendCommand(Command.clickRight.value),
-                  child: Container(
-                    color: Theme.of(context).colorScheme.primaryFixedDim,
-                  ),
                 ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ClickButton extends StatelessWidget {
+  const _ClickButton({
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.onTapDown,
+    this.onTapUp,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final VoidCallback? onTapDown;
+  final VoidCallback? onTapUp;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        onTapDown: onTapDown == null ? null : (_) => onTapDown!(),
+        onTapUp: onTapUp == null ? null : (_) => onTapUp!(),
+        onTapCancel: onTapUp,
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: 8),
+              Text(label),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -288,7 +373,7 @@ class ScrollbarControl extends StatefulWidget {
 class _ScrollbarControlState extends State<ScrollbarControl> {
   double _lastY = 0;
   DateTime _lastSentTime = DateTime.now();
-  final int _throttleMs = 16; // ~60 updates per second
+  final int _throttleMs = 16;
 
   void _handleDragStart(DragStartDetails details) {
     _lastY = details.localPosition.dy;
@@ -301,7 +386,7 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
 
     final now = DateTime.now();
     if (now.difference(_lastSentTime).inMilliseconds >= _throttleMs) {
-      final scrollAmount = -(dy * 2).round(); // adjust multiplier for speed
+      final scrollAmount = -(dy * 2).round();
       if (scrollAmount != 0) {
         appState.sendScroll(scrollAmount);
         _lastSentTime = now;
@@ -316,12 +401,12 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
 
     return Material(
       color: theme.colorScheme.surfaceContainerHigh,
-      elevation: 2,
-      borderRadius: BorderRadius.circular(12),
+      elevation: 1,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 60,
+        width: 58,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -331,20 +416,24 @@ class _ScrollbarControlState extends State<ScrollbarControl> {
           child: Column(
             children: [
               IconButton(
-                icon:
-                    Icon(Icons.arrow_upward, color: theme.colorScheme.primary),
+                icon: Icon(Icons.keyboard_arrow_up,
+                    color: theme.colorScheme.primary),
                 onPressed: () => appState.sendScroll(5),
               ),
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: RotatedBox(
                     quarterTurns: 1,
-                    child: Icon(Icons.drag_handle, size: 20),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.arrow_downward,
+                icon: Icon(Icons.keyboard_arrow_down,
                     color: theme.colorScheme.primary),
                 onPressed: () => appState.sendScroll(-5),
               ),
