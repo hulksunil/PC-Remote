@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:client/app/app_state.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -11,8 +10,16 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ipController = TextEditingController();
   String host = '';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ipController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +35,25 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             // --- IP INPUT FIELD ---
             TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Server Name (optional)',
+                hintText: 'e.g. Office Desktop',
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 8),
+
+            // --- IP INPUT FIELD ---
+            TextField(
               controller: _ipController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Server IP Address',
                 hintText: 'e.g. 192.168.2.12',
               ),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: 5),
 
@@ -55,12 +74,13 @@ class _SettingsPageState extends State<SettingsPage> {
             TextButton.icon(
               onPressed: () {
                 final ip = _ipController.text.trim();
-                if (ip.isNotEmpty && !appState.savedIps.contains(ip)) {
-                  appState.addSavedIp(ip);
+                final name = _nameController.text.trim();
+                if (ip.isNotEmpty) {
+                  appState.addOrUpdateSavedServer(ip, name: name);
                 }
               },
               icon: const Icon(Icons.save),
-              label: const Text("Save this IP"),
+              label: const Text("Save/Update Server"),
             ),
 
             const SizedBox(height: 16),
@@ -79,34 +99,42 @@ class _SettingsPageState extends State<SettingsPage> {
 
             const SizedBox(height: 30),
 
-            // --- SAVED IPS LIST ---
+            // --- SAVED SERVERS LIST ---
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Saved IP Addresses:",
+                  const Text("Saved Servers:",
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: appState.savedIps.length,
+                      itemCount: appState.savedServers.length,
                       itemBuilder: (context, index) {
-                        final ip = appState.savedIps[index];
+                        final server = appState.savedServers[index];
+                        final displayName =
+                            server.name.trim().isEmpty ? server.ip : server.name;
+
                         return ListTile(
-                          title: Text(ip),
+                          title: Text(displayName),
+                          subtitle: displayName == server.ip
+                              ? null
+                              : Text(server.ip),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () {
-                              appState.removeSavedIp(ip);
+                              appState.removeSavedServer(server.ip);
                             },
                           ),
                           onTap: () {
-                            _ipController.text = ip;
+                            _nameController.text =
+                                server.name == server.ip ? '' : server.name;
+                            _ipController.text = server.ip;
                             setState(() {
-                              host = ip;
+                              host = server.ip;
                             });
-                            appState.connectToServer(ip);
+                            appState.connectToServer(server.ip);
                           },
                         );
                       },

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:client/services/navigation_service.dart';
 import 'package:client/pages/settings_page.dart';
+import 'package:client/models/saved_server.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:client/services/IPStorage.dart';
 
@@ -41,7 +42,7 @@ class AppState extends ChangeNotifier {
 
   // Constructor
   AppState() {
-    loadSavedIps();
+    loadSavedServers();
   }
 
   void navigateToSettingsOnce() {
@@ -240,25 +241,47 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Handle the saved ip addresses
-  final List<String> savedIps = [];
+  // Handle saved servers (name + IP)
+  final List<SavedServer> savedServers = [];
 
-  void addSavedIp(String ip) async {
-    savedIps.add(ip);
-    await IPStorage.saveIPs(savedIps);
+  bool hasSavedServerIp(String ip) {
+    final normalizedIp = ip.trim();
+    return savedServers.any((server) => server.ip == normalizedIp);
+  }
+
+  Future<void> addOrUpdateSavedServer(String ip, {String? name}) async {
+    final normalizedIp = ip.trim();
+    final normalizedName = (name ?? '').trim();
+
+    if (normalizedIp.isEmpty) return;
+
+    final resolvedName =
+        normalizedName.isEmpty ? normalizedIp : normalizedName;
+    final updatedServer = SavedServer(name: resolvedName, ip: normalizedIp);
+
+    final existingIndex =
+        savedServers.indexWhere((server) => server.ip == normalizedIp);
+    if (existingIndex >= 0) {
+      savedServers[existingIndex] = updatedServer;
+    } else {
+      savedServers.add(updatedServer);
+    }
+
+    await IPStorage.saveServers(savedServers);
     notifyListeners();
   }
 
-  void removeSavedIp(String ip) async {
-    savedIps.remove(ip);
-    await IPStorage.saveIPs(savedIps);
+  Future<void> removeSavedServer(String ip) async {
+    final normalizedIp = ip.trim();
+    savedServers.removeWhere((server) => server.ip == normalizedIp);
+    await IPStorage.saveServers(savedServers);
     notifyListeners();
   }
 
-  Future<void> loadSavedIps() async {
-    final ips = await IPStorage.loadIPs();
-    savedIps.clear();
-    savedIps.addAll(ips);
+  Future<void> loadSavedServers() async {
+    final servers = await IPStorage.loadServers();
+    savedServers.clear();
+    savedServers.addAll(servers);
     notifyListeners();
   }
 
