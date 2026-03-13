@@ -6,6 +6,13 @@ enum Command {
   playPause,
   nextTrack,
   previousTrack,
+  streamPlayPause,
+  seekBack10,
+  seekForward10,
+  skipIntro,
+  nextEpisode,
+  toggleFullscreen,
+  streamMute,
   clickLeft,
   clickRight,
   mouseUp,
@@ -37,6 +44,20 @@ extension CommandExtension on Command {
         return "NEXT_TRACK";
       case Command.previousTrack:
         return "PREVIOUS_TRACK";
+      case Command.streamPlayPause:
+        return "STREAM_PLAY_PAUSE";
+      case Command.seekBack10:
+        return "SEEK_BACK_10";
+      case Command.seekForward10:
+        return "SEEK_FORWARD_10";
+      case Command.skipIntro:
+        return "SKIP_INTRO";
+      case Command.nextEpisode:
+        return "NEXT_EPISODE";
+      case Command.toggleFullscreen:
+        return "TOGGLE_FULLSCREEN";
+      case Command.streamMute:
+        return "STREAM_MUTE";
       case Command.clickLeft:
         return "CLICK_LEFT";
       case Command.clickRight:

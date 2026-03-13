@@ -4,6 +4,7 @@ import 'package:client/app/app_state.dart';
 import 'package:client/pages/mouse_control_page.dart';
 import 'package:client/pages/keyboard_control_page.dart';
 import 'package:client/pages/media_control_page.dart';
+import 'package:client/pages/streaming_control_page.dart';
 import 'package:client/pages/settings_page.dart';
 import 'package:client/services/navigation_service.dart';
 import 'package:client/pages/power_control_page.dart';
@@ -82,8 +83,10 @@ class _HomePageState extends State<HomePage> {
       case 1:
         pageToDisplay = MediaControlPage();
       case 2:
-        pageToDisplay = PowerSettingsPage();
+        pageToDisplay = const StreamingControlPage();
       case 3:
+        pageToDisplay = PowerSettingsPage();
+      case 4:
         pageToDisplay = KeyboardControlPage();
       default:
         throw UnimplementedError('No widget for $selectedIndex');
@@ -108,6 +111,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.multitrack_audio),
             label: 'Volume/Music',
             backgroundColor: Colors.deepPurple,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.live_tv),
+            label: 'Streaming',
+            backgroundColor: Colors.orange,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.power_settings_new),

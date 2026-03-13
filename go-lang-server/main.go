@@ -40,6 +40,13 @@ const (
 	PLAY_PAUSE         = "PLAY_PAUSE"
 	NEXT_TRACK         = "NEXT_TRACK"
 	PREVIOUS_TRACK     = "PREVIOUS_TRACK"
+	STREAM_PLAY_PAUSE  = "STREAM_PLAY_PAUSE"
+	SEEK_BACK_10       = "SEEK_BACK_10"
+	SEEK_FORWARD_10    = "SEEK_FORWARD_10"
+	SKIP_INTRO         = "SKIP_INTRO"
+	NEXT_EPISODE       = "NEXT_EPISODE"
+	TOGGLE_FULLSCREEN  = "TOGGLE_FULLSCREEN"
+	STREAM_MUTE        = "STREAM_MUTE"
 	CURRENT_VOLUME     = "CURRENT_VOLUME"
 	MOVE_MOUSE         = "MOVE_MOUSE"
 	MOUSE_DOWN         = "MOUSE_DOWN"
@@ -234,6 +241,20 @@ func executeCommand(conn net.Conn, cmd string) {
 		media.NextTrack()
 	case cmd == PREVIOUS_TRACK:
 		media.PreviousTrack()
+	case cmd == STREAM_PLAY_PAUSE:
+		keyboard.SpecialKey("SPACE")
+	case cmd == SEEK_BACK_10:
+		keyboard.SpecialKey("LEFT")
+	case cmd == SEEK_FORWARD_10:
+		keyboard.SpecialKey("RIGHT")
+	case cmd == SKIP_INTRO:
+		keyboard.SpecialKey("S")
+	case cmd == NEXT_EPISODE:
+		keyboard.SpecialKey("N")
+	case cmd == TOGGLE_FULLSCREEN:
+		keyboard.SpecialKey("F")
+	case cmd == STREAM_MUTE:
+		keyboard.SpecialKey("M")
 	case cmd == CURRENT_VOLUME:
 		vol := media.GetVolume()
 		conn.Write([]byte(fmt.Sprintf("%d\n", vol)))
