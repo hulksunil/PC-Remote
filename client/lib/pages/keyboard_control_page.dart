@@ -255,7 +255,7 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Type while watching your connected PC. Input is hidden on this screen.',
+                          'Type while watching your connected PC.',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -272,10 +272,11 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                           focusNode: _focusNode,
                           autofocus: true,
                           minLines: 1,
-                          maxLines: 1,
+                          maxLines: null,
                           enableInteractiveSelection: false,
                           keyboardType: TextInputType.multiline,
                           textInputAction: TextInputAction.newline,
+                          onEditingComplete: () {},
                           enableSuggestions: true,
                           autocorrect: false,
                           showCursor: false,
