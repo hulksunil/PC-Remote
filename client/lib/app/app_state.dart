@@ -36,8 +36,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  DateTime _lastMouseSend = DateTime.now();
-
   bool _navigatingToSettings = false;
 
   // Constructor
@@ -74,10 +72,6 @@ class AppState extends ChangeNotifier {
       navigateToSettingsOnce();
       return;
     }
-
-    final now = DateTime.now();
-    if (now.difference(_lastMouseSend).inMilliseconds < 25) return;
-    _lastMouseSend = now;
 
     final command = "MOVE_MOUSE:$dx,$dy;";
     final data = utf8.encode(command);

@@ -36,6 +36,7 @@ class Touchpad extends StatefulWidget {
 class _TouchpadState extends State<Touchpad> {
   Offset? _lastFocalPoint;
   Offset _pendingMouseDelta = Offset.zero;
+  Offset _mouseMoveRemainder = Offset.zero;
   double _pendingScrollRemainder = 0;
   DateTime _lastSentTime = DateTime.now();
 
@@ -78,6 +79,7 @@ class _TouchpadState extends State<Touchpad> {
       _isTwoFingerGesture = true;
       _lastFocalPoint = null;
       _pendingMouseDelta = Offset.zero;
+      _mouseMoveRemainder = Offset.zero;
       _pendingScrollRemainder = 0;
       _lastPointerCount = 2;
 
@@ -94,6 +96,7 @@ class _TouchpadState extends State<Touchpad> {
       _isTwoFingerGesture = false;
       _lastFocalPoint = null;
       _pendingMouseDelta = Offset.zero;
+      _mouseMoveRemainder = Offset.zero;
       _pendingScrollRemainder = 0;
       _lastPointerCount = _activePointers;
 
@@ -116,6 +119,7 @@ class _TouchpadState extends State<Touchpad> {
   void _handleScaleStart(ScaleStartDetails details) {
     _lastFocalPoint = details.localFocalPoint;
     _pendingMouseDelta = Offset.zero;
+    _mouseMoveRemainder = Offset.zero;
     _pendingScrollRemainder = 0;
     _lastPointerCount = _activePointers;
     _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
@@ -134,6 +138,7 @@ class _TouchpadState extends State<Touchpad> {
     if (pointerCount != _lastPointerCount) {
       _lastFocalPoint = details.localFocalPoint;
       _pendingMouseDelta = Offset.zero;
+      _mouseMoveRemainder = Offset.zero;
       _pendingScrollRemainder = 0;
       _lastPointerCount = pointerCount;
       _lastSentTime = now;
@@ -167,8 +172,19 @@ class _TouchpadState extends State<Touchpad> {
       final velocityBoost =
           _isDraggingFromDoubleTap ? 1.0 : (speed * 3).clamp(1.0, 3.0);
 
-      final dx = (_pendingMouseDelta.dx * sensitivity * velocityBoost).round();
-      final dy = (_pendingMouseDelta.dy * sensitivity * velocityBoost).round();
+      final scaledDx =
+          (_pendingMouseDelta.dx * sensitivity * velocityBoost) +
+              _mouseMoveRemainder.dx;
+      final scaledDy =
+          (_pendingMouseDelta.dy * sensitivity * velocityBoost) +
+              _mouseMoveRemainder.dy;
+      final dx = scaledDx.truncate();
+      final dy = scaledDy.truncate();
+
+      _mouseMoveRemainder = Offset(
+        scaledDx - dx,
+        scaledDy - dy,
+      );
 
       if (dx != 0 || dy != 0) {
         appState.sendMouseMove(dx, dy);
@@ -187,6 +203,7 @@ class _TouchpadState extends State<Touchpad> {
 
     _lastFocalPoint = null;
     _pendingMouseDelta = Offset.zero;
+    _mouseMoveRemainder = Offset.zero;
     _pendingScrollRemainder = 0;
     _lastPointerCount = 0;
   }
