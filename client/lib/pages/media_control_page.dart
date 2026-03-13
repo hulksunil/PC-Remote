@@ -158,7 +158,7 @@ class _MediaControlPageState extends State<MediaControlPage> {
                       ),
                       Positioned(
                         top: 16,
-                        child: _RoundControl(
+                        child: _EdgeControl(
                           icon: Icons.volume_up,
                           label: 'Vol +',
                           onTapDown: (_) =>
@@ -169,7 +169,7 @@ class _MediaControlPageState extends State<MediaControlPage> {
                       ),
                       Positioned(
                         bottom: 16,
-                        child: _RoundControl(
+                        child: _EdgeControl(
                           icon: Icons.volume_down,
                           label: 'Vol -',
                           onTapDown: (_) =>
@@ -180,7 +180,7 @@ class _MediaControlPageState extends State<MediaControlPage> {
                       ),
                       Positioned(
                         left: 16,
-                        child: _RoundControl(
+                        child: _EdgeControl(
                           icon: Icons.skip_previous,
                           label: 'Prev',
                           onTap: () =>
@@ -189,7 +189,7 @@ class _MediaControlPageState extends State<MediaControlPage> {
                       ),
                       Positioned(
                         right: 16,
-                        child: _RoundControl(
+                        child: _EdgeControl(
                           icon: Icons.skip_next,
                           label: 'Next',
                           onTap: () =>
@@ -215,8 +215,8 @@ class _MediaControlPageState extends State<MediaControlPage> {
   }
 }
 
-class _RoundControl extends StatelessWidget {
-  const _RoundControl({
+class _EdgeControl extends StatelessWidget {
+  const _EdgeControl({
     required this.icon,
     required this.label,
     this.onTap,
@@ -237,22 +237,28 @@ class _RoundControl extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      shape: const CircleBorder(),
-      color: colorScheme.surface.withValues(alpha: 0.9),
+      color: Colors.transparent,
       child: InkWell(
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         onTapDown: onTapDown,
         onTapUp: onTapUp,
         onTapCancel: onTapCancel,
         child: SizedBox(
-          width: 68,
-          height: 68,
+          width: 72,
+          height: 72,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 24),
-              Text(label, style: Theme.of(context).textTheme.labelSmall),
+              Icon(icon, size: 26, color: colorScheme.onSecondaryContainer),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
             ],
           ),
         ),
