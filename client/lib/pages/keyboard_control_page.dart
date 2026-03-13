@@ -29,12 +29,6 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
     _controller.addListener(_processTextDiff);
     _restoreComposer();
     _topUpLocalBuffer();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        FocusScope.of(context).requestFocus(_focusNode);
-      }
-    });
   }
 
   @override
@@ -270,7 +264,7 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                         TextField(
                           controller: _controller,
                           focusNode: _focusNode,
-                          autofocus: true,
+                          autofocus: false,
                           minLines: 1,
                           maxLines: null,
                           enableInteractiveSelection: false,
