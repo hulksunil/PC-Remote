@@ -23,6 +23,8 @@ func SpecialKey(key string) {
 		robotgo.KeyTap("escape")
 	case "TAB":
 		robotgo.KeyTap("tab")
+	case "DELETE":
+		robotgo.KeyTap("delete")
 	case "CTRL":
 		robotgo.KeyToggle("ctrl", "down")
 	case "CTRL_RELEASE":

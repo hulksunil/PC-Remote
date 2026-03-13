@@ -311,6 +311,11 @@ class _KeyboardControlPageState extends State<KeyboardControlPage> {
                       label: const Text('Tab'),
                     ),
                     FilledButton.tonalIcon(
+                      onPressed: () => _sendSpecialKey('DELETE'),
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Del'),
+                    ),
+                    FilledButton.tonalIcon(
                       onPressed: () => _sendSpecialKey('ESCAPE'),
                       icon: const Icon(Icons.close_fullscreen),
                       label: const Text('Esc'),
