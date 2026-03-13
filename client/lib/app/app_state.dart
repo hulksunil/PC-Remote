@@ -127,8 +127,10 @@ class AppState extends ChangeNotifier {
 
   Completer<String>? _responseCompleter;
 
-  void _setupSocketListener() {
-    socket!.listen((List<int> data) {
+  void _setupSocketListener(Socket activeSocket, InternetAddress activeServer) {
+    activeSocket.listen((List<int> data) {
+      if (socket != activeSocket) return;
+
       final response = utf8.decode(data).trim();
       print('Received response: $response');
 
@@ -137,7 +139,8 @@ class AppState extends ChangeNotifier {
         print("Server accepted connection!");
 
         // Send initial UDP packet to lock the server
-        if (udpSocket != null && serverAddress != null) {
+        if (udpSocket != null &&
+            serverAddress?.address == activeServer.address) {
           final udpHello = utf8.encode("UDP_HELLO");
           udpSocket!.send(udpHello, serverAddress!, udpPort);
           print("Sent initial UDP_HELLO packet to server");
@@ -162,9 +165,11 @@ class AppState extends ChangeNotifier {
         _responseCompleter!.complete(response);
       }
     }, onError: (error) {
+      if (socket != activeSocket) return;
       print('Socket error: $error');
       disconnect();
     }, onDone: () {
+      if (socket != activeSocket) return;
       print('Socket closed');
       disconnect();
     });
@@ -191,11 +196,26 @@ class AppState extends ChangeNotifier {
 
   Future<void> connectToServer(String ip) async {
     try {
-      serverAddress = InternetAddress(ip);
+      final targetAddress = InternetAddress(ip);
+
+      if (socket != null || udpSocket != null) {
+        final currentIp = serverAddress?.address;
+        if (currentIp != targetAddress.address) {
+          print(
+            "Disconnecting existing connection ($currentIp) before connecting to $ip",
+          );
+          disconnect();
+        } else {
+          print("Already connected to $ip");
+          return;
+        }
+      }
+
+      serverAddress = targetAddress;
       print("Attempting connection to server at $ip with port $port...");
 
       // TCP
-      socket = await Socket.connect(serverAddress!, port);
+      socket = await Socket.connect(targetAddress, port);
 
       // UDP
       udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
@@ -203,7 +223,7 @@ class AppState extends ChangeNotifier {
       print("TCP connected (waiting for server WELCOME)...");
       print("UDP socket bound to ${udpSocket!.port}");
 
-      _setupSocketListener();
+      _setupSocketListener(socket!, targetAddress);
       // notifyListeners();
     } catch (e) {
       print("Connection error: $e");
