@@ -138,7 +138,7 @@ func handleClient(conn net.Conn) {
 				log.Printf("Client disconnected: %v", err)
 				return
 			}
-			cmd := strings.TrimSpace(string(buf[:n]))
+			cmd := strings.TrimRight(string(buf[:n]), "\r\n")
 
 			if cmd != "" {
 				log.Printf("Received command: %s", cmd)
