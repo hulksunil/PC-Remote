@@ -33,18 +33,18 @@ class Touchpad extends StatefulWidget {
   State<Touchpad> createState() => _TouchpadState();
 }
 
-// TODO(sunil): fix the issue of when you have 2 fingers on the screen and you lift one finger, the mouse moves to where the other finger was
 class _TouchpadState extends State<Touchpad> {
-  Offset? _lastPosition;
-  Offset _accumulatedDelta = Offset.zero;
+  Offset? _lastFocalPoint;
+  Offset _pendingMouseDelta = Offset.zero;
+  double _pendingScrollRemainder = 0;
   DateTime _lastSentTime = DateTime.now();
   final int _throttleDelayMs = 16;
   final double sensitivity = 3;
-  final double scrollMultiplier = 5;
+  final double scrollMultiplier = 2;
 
   int _activePointers = 0;
+  int _lastPointerCount = 0;
   bool _isTwoFingerGesture = false;
-  bool _readyForScroll = false;
 
   DateTime? _twoFingerTapStart;
   Offset? _twoFingerTapStartPos;
@@ -65,7 +65,10 @@ class _TouchpadState extends State<Touchpad> {
     _activePointers++;
     if (_activePointers == 2) {
       _isTwoFingerGesture = true;
-      _readyForScroll = false;
+      _lastFocalPoint = null;
+      _pendingMouseDelta = Offset.zero;
+      _pendingScrollRemainder = 0;
+      _lastPointerCount = 2;
 
       // Start tracking for potential two-finger tap
       _twoFingerTapStart = DateTime.now();
@@ -75,10 +78,14 @@ class _TouchpadState extends State<Touchpad> {
   }
 
   void _handlePointerUp(PointerUpEvent event) {
-    _activePointers = (_activePointers - 1).clamp(0, 10);
+    _activePointers = (_activePointers - 1).clamp(0, 10).toInt();
 
     if (_activePointers < 2) {
       _isTwoFingerGesture = false;
+      _lastFocalPoint = null;
+      _pendingMouseDelta = Offset.zero;
+      _pendingScrollRemainder = 0;
+      _lastPointerCount = _activePointers;
 
       if (_potentialTwoFingerTap && _twoFingerTapStart != null) {
         final duration =
@@ -97,72 +104,84 @@ class _TouchpadState extends State<Touchpad> {
     }
   }
 
-  void _handlePanStart(DragStartDetails details) {
-    // When a two-finger gesture starts, reset position to avoid jump
-    _lastPosition = details.localPosition;
-    _accumulatedDelta = Offset.zero;
+  void _handleScaleStart(ScaleStartDetails details) {
+    _lastFocalPoint = details.localFocalPoint;
+    _pendingMouseDelta = Offset.zero;
+    _pendingScrollRemainder = 0;
+    _lastPointerCount = _activePointers;
     _lastSentTime = DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  void _handlePanUpdate(AppState appState, DragUpdateDetails details) {
+  void _handleScaleUpdate(AppState appState, ScaleUpdateDetails details) {
     final now = DateTime.now();
+    final pointerCount = details.pointerCount;
 
-    if (_lastPosition == null || (_isTwoFingerGesture && !_readyForScroll)) {
-      _lastPosition = details.localPosition;
-      _accumulatedDelta = Offset.zero;
-      _readyForScroll = true; // Now we’re ready
+    if (_lastFocalPoint == null) {
+      _lastFocalPoint = details.localFocalPoint;
+      _lastPointerCount = pointerCount;
       return;
     }
 
-    final delta = details.localPosition - _lastPosition!;
-    _accumulatedDelta += delta;
-    _lastPosition = details.localPosition;
+    // Ignore the transition frame when pointer count changes to avoid jumps.
+    if (pointerCount != _lastPointerCount) {
+      _lastFocalPoint = details.localFocalPoint;
+      _pendingMouseDelta = Offset.zero;
+      _pendingScrollRemainder = 0;
+      _lastPointerCount = pointerCount;
+      _lastSentTime = now;
+      return;
+    }
+
+    final delta = details.localFocalPoint - _lastFocalPoint!;
+    _lastFocalPoint = details.localFocalPoint;
 
     const double minMovementThreshold = 0.4;
     final elapsed = now.difference(_lastSentTime).inMilliseconds;
 
-    if (_accumulatedDelta.distance >= minMovementThreshold &&
+    if (pointerCount >= 2 || _isTwoFingerGesture) {
+      _pendingScrollRemainder += delta.dy * scrollMultiplier;
+      if (elapsed >= _throttleDelayMs) {
+        final scrollAmount = _pendingScrollRemainder.truncate();
+        if (scrollAmount != 0) {
+          appState.sendScroll(scrollAmount);
+          _pendingScrollRemainder -= scrollAmount;
+        }
+        _lastSentTime = now;
+      }
+      return;
+    }
+
+    _pendingMouseDelta += delta;
+
+    if (_pendingMouseDelta.distance >= minMovementThreshold &&
         elapsed >= _throttleDelayMs) {
-      if (_isDraggingFromDoubleTap) {
-        appState.sendMouseMove(
-          (_accumulatedDelta.dx * sensitivity).round(),
-          (_accumulatedDelta.dy * sensitivity).round(),
-        );
+      final speed = _pendingMouseDelta.distance / elapsed.clamp(1, 1000);
+      final velocityBoost = _isDraggingFromDoubleTap
+          ? 1.0
+          : (speed * 3).clamp(1.0, 3.0);
+
+      final dx = (_pendingMouseDelta.dx * sensitivity * velocityBoost).round();
+      final dy = (_pendingMouseDelta.dy * sensitivity * velocityBoost).round();
+
+      if (dx != 0 || dy != 0) {
+        appState.sendMouseMove(dx, dy);
       }
 
       _lastSentTime = now;
-
-      if (_isTwoFingerGesture) {
-        final scrollAmount = (_accumulatedDelta.dy * scrollMultiplier).round();
-        if (scrollAmount.abs() > 10) {
-          appState.sendScroll(scrollAmount);
-        }
-      } else {
-        final speed = _accumulatedDelta.distance / elapsed.clamp(1, 1000);
-        final velocityBoost = (speed * 3).clamp(1.0, 3.0);
-        appState.sendMouseMove(
-          (_accumulatedDelta.dx * sensitivity * velocityBoost).round(),
-          (_accumulatedDelta.dy * sensitivity * velocityBoost).round(),
-        );
-      }
-
-      _accumulatedDelta = Offset.zero;
+      _pendingMouseDelta = Offset.zero;
     }
   }
 
-  void _handlePanEnd(AppState appState, DragEndDetails details) {
+  void _handleScaleEnd(AppState appState, ScaleEndDetails details) {
     if (_isDraggingFromDoubleTap) {
       appState.sendCommand(Command.mouseUp.value);
       _isDraggingFromDoubleTap = false;
     }
 
-    if (_isTwoFingerGesture && _accumulatedDelta.distance < 10) {
-      appState
-          .sendCommand(Command.clickRight.value); // Treat it as a right-click
-    }
-
-    _lastPosition = null;
-    _accumulatedDelta = Offset.zero;
+    _lastFocalPoint = null;
+    _pendingMouseDelta = Offset.zero;
+    _pendingScrollRemainder = 0;
+    _lastPointerCount = 0;
   }
 
   @override
@@ -176,9 +195,9 @@ class _TouchpadState extends State<Touchpad> {
             onPointerDown: (event) => _handlePointerDown(appState, event),
             onPointerUp: _handlePointerUp,
             child: GestureDetector(
-              onPanStart: _handlePanStart,
-              onPanUpdate: (details) => _handlePanUpdate(appState, details),
-              onPanEnd: (details) => _handlePanEnd(appState, details),
+              onScaleStart: _handleScaleStart,
+              onScaleUpdate: (details) => _handleScaleUpdate(appState, details),
+              onScaleEnd: (details) => _handleScaleEnd(appState, details),
               onTapDown: (details) {
                 final now = DateTime.now();
                 final pos = details.localPosition;
@@ -196,7 +215,7 @@ class _TouchpadState extends State<Touchpad> {
               },
               onTapUp: (details) {
                 if (_isDraggingFromDoubleTap) {
-                  // Do nothing yet; wait for pan end to send mouse up
+                  // Do nothing yet; wait for scale end to send mouse up
                 } else if (!_isTwoFingerGesture && !_suppressNextTap) {
                   appState.sendCommand(Command.clickLeft.value);
                 }
