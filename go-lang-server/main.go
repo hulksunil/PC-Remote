@@ -244,17 +244,17 @@ func executeCommand(conn net.Conn, cmd string) {
 	case cmd == STREAM_PLAY_PAUSE:
 		keyboard.SpecialKey("SPACE")
 	case cmd == SEEK_BACK_10:
-		keyboard.SpecialKey("LEFT")
+		keyboard.SpecialKey("SEEK_BACK_10")
 	case cmd == SEEK_FORWARD_10:
-		keyboard.SpecialKey("RIGHT")
+		keyboard.SpecialKey("SEEK_FORWARD_10")
 	case cmd == SKIP_INTRO:
-		keyboard.SpecialKey("S")
+		keyboard.SpecialKey("SKIP_INTRO")
 	case cmd == NEXT_EPISODE:
-		keyboard.SpecialKey("N")
+		keyboard.SpecialKey("NEXT_EPISODE")
 	case cmd == TOGGLE_FULLSCREEN:
-		keyboard.SpecialKey("F")
+		keyboard.SpecialKey("TOGGLE_FULLSCREEN")
 	case cmd == STREAM_MUTE:
-		keyboard.SpecialKey("M")
+		keyboard.SpecialKey("STREAM_MUTE")
 	case cmd == CURRENT_VOLUME:
 		vol := media.GetVolume()
 		conn.Write([]byte(fmt.Sprintf("%d\n", vol)))

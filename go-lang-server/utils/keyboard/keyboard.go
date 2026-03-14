@@ -29,19 +29,19 @@ func SpecialKey(key string) {
 		robotgo.KeyToggle("ctrl", "down")
 	case "CTRL_RELEASE":
 		robotgo.KeyToggle("ctrl", "up")
-	case "LEFT":
+	case "SEEK_BACK_10":
 		robotgo.KeyTap("left")
-	case "RIGHT":
+	case "SEEK_FORWARD_10":
 		robotgo.KeyTap("right")
 	case "SPACE":
 		robotgo.KeyTap("space")
-	case "F":
+	case "TOGGLE_FULLSCREEN":
 		robotgo.KeyTap("f")
-	case "M":
+	case "STREAM_MUTE":
 		robotgo.KeyTap("m")
-	case "N":
+	case "NEXT_EPISODE":
 		robotgo.KeyTap("n")
-	case "S":
+	case "SKIP_INTRO":
 		robotgo.KeyTap("s")
 	default:
 		log.Printf("Unknown special key: %s", key)
